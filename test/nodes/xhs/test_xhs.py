@@ -8,10 +8,8 @@ def test_xhs():
         "edges": [{
             "source": "0",
             "target": "1"
-        }, {
-            "source": "1",
-            "target": "2"
-        }],
+        }
+        ],
         "nodes": [{
             "id": "0",
             "type":"start",
@@ -19,11 +17,15 @@ def test_xhs():
         }, {
             "id": "1",
             "type":"xhs",
-            "data":"1"
-        }, {
-            "id": "2",
-            "type":"xhs",
-            "data":"1"
+            "data":{
+                "operate_cmd":"2",
+                "task_json":{
+                    "title":"test",
+                    "content":"test",
+                    "img_url":"https://pic1.zhimg.com/v2-abed1a8c04700ba7d72b45195223e0ff_l.jpeg",
+                    "twitter_url":"http://xhslink.com/a/74yBV87HSjC5"
+                }
+            }
         }],
     }
 
