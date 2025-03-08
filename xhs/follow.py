@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import time
 
@@ -6,115 +7,115 @@ from loguru import logger
 
 from enums.xhs_enums import OperateEnums
 from utils.click import click_resource_timeout_button
+from utils.clipboard import get_clipboard_text
 from utils.image import os_push_image, select_image_in_gallery
 from utils.str import extract_filename_from_url
-from xhs.common import restart_xhs
+from xhs.common import restart_xhs, is_element_within_bounds, get_element_bounds
 from xhs.intent import open_xhs_link, open_xhs_user_home
 
-local_directory = "D:\\work\\groupc\\xhsv2\\image\\"
+local_directory = "D:\\work\\matrix-workflow-performer\\collect\\images\\"
 
 
-# def collect_articles(d, article_element):
-#     articles = []
-#     logger.info(f"设备：{d.serial}: 开始采集文章")
-#     try:
-#         # while True:
-#
-#         video_button = article_element.sibling(resourceId='com.xingin.xhs:id/e94')
-#         if video_button.exists and is_element_within_bounds(video_button,
-#                                                             get_element_bounds(article_element)):
-#             return articles
-#         if article_element.exists:
-#             article_element.click()
-#             time.sleep(2)
-#             count = int(get_image_count(d))
-#             article = get_article(d, count)
-#             if article is not None:
-#                 skip = False
-#                 if article["title"] == "" and article["tweet"] == "" and article["username"] == "":
-#                     skip = True
-#                 for art in articles:
-#                     if article["title"] == art["title"] and article["tweet"] == art["tweet"]:
-#                         skip = True
-#                         break
-#                 if skip:
-#                     d.press('back')
-#                     return articles
-#                 logger.info(f"设备：{d.serial},采集：{article}")
-#                 articles.append(article)
-#             d.press('back')
-#         # else:
-#         # break
-#         logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
-#         return articles
-#     except Exception as e:
-#         logger.error(f'设备号{d.serial}: 采集小红书文章时发生错误{e}')
-#         logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
-#         return articles
+def collect_articles(d):
+    articles = []
+    logger.info(f"设备：{d.serial}: 开始采集文章")
+    try:
+        articles_button = d(resourceId='com.xingin.xhs:id/e6p')
+        if len(articles_button) > 0:
+            for article_element in articles_button:
+                video_button = article_element.sibling(resourceId='com.xingin.xhs:id/e94')
+                if video_button.exists and is_element_within_bounds(video_button,
+                                                                    get_element_bounds(article_element)):
+                    return articles
+                if article_element.exists:
+                    article_element.click()
+                    time.sleep(2)
+                    count = int(get_image_count(d))
+                    article = get_article(d, count)
+                    if article is not None:
+                        skip = False
+                        if article["title"] == "" and article["tweet"] == "" and article["username"] == "":
+                            skip = True
+                        for art in articles:
+                            if article["title"] == art["title"] and article["tweet"] == art["tweet"]:
+                                skip = True
+                                break
+                        if skip:
+                            d.press('back')
+                            return articles
+                        logger.info(f"设备：{d.serial},采集：{article}")
+                        articles.append(article)
+                    d.press('back')
+        logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
+        return articles
+    except Exception as e:
+        logger.error(f'设备号{d.serial}: 采集小红书文章时发生错误{e}')
+        logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
+        return articles
 
 
-# def get_article(device, count):
-#     clear_gallery(device.serial)
-#     save_image(device, count)
-#     article = {}
-#     title_button = device(resourceId='com.xingin.xhs:id/g8t')
-#     if title_button.exists:
-#         title = title_button.get_text()
-#         article['title'] = title
-#     else:
-#         article['title'] = ""
-#         logger.error(f'设备：{device.serial}:没有找到文章标题')
-#     articles_area = device(resourceId='com.xingin.xhs:id/dqd')
-#     if articles_area.exists:
-#         article_text = articles_area.get_text()
-#         article['tweet'] = article_text
-#     else:
-#         article['tweet'] = ""
-#         logger.error(f'设备：{device.serial}:没有找到文章内容')
-#     user_button = device(resourceId='com.xingin.xhs:id/nickNameTV')
-#     if user_button.exists:
-#         user = user_button.get_text()
-#         article['username'] = user
-#     else:
-#         article['username'] = ""
-#         logger.error(f'设备：{device.serial}:没有找到用户名称')
-#     share_button = device(resourceId='com.xingin.xhs:id/moreOperateIV')
-#     if share_button.exists:
-#         share_button.click()
-#         time.sleep(1)
-#         copy_button = device(resourceId='com.xingin.xhs:id/j_8', text='复制链接')
-#         if copy_button.wait(timeout= 3) and copy_button.exists:
-#             copy_button.click()
-#             time.sleep(1)
-#             xhs_link = get_clipboard_text(device)
-#             if xhs_link:
-#                 # 正则表达式提取链接
-#                 link_pattern = r"http[s]?://[^\s，]+"
-#                 links = re.findall(link_pattern, xhs_link)
-#                 if len(links) > 0:
-#                     article['link'] = links[0]
-#                 else:
-#                     article['link'] = ""
-#         else:
-#             logger.error(f'设备：{device.serial}:没有找到复制按钮')
-#     image_path = device.serial + "\\" + article["title"] + article["username"]
-#     export_gallery_to_computer(image_path, device.serial)
-#     return article
+def get_article(device, count):
+    clear_gallery(device.serial)
+    save_image(device, count)
+    article = {}
+    title_button = device(resourceId='com.xingin.xhs:id/g8t')
+    if title_button.exists:
+        title = title_button.get_text()
+        article['title'] = title
+    else:
+        article['title'] = ""
+        logger.error(f'设备：{device.serial}:没有找到文章标题')
+    articles_area = device(resourceId='com.xingin.xhs:id/dqd')
+    if articles_area.exists:
+        article_text = articles_area.get_text()
+        article['tweet'] = article_text
+    else:
+        article['tweet'] = ""
+        logger.error(f'设备：{device.serial}:没有找到文章内容')
+    user_button = device(resourceId='com.xingin.xhs:id/nickNameTV')
+    if user_button.exists:
+        user = user_button.get_text()
+        article['username'] = user
+    else:
+        article['username'] = ""
+        logger.error(f'设备：{device.serial}:没有找到用户名称')
+    share_button = device(resourceId='com.xingin.xhs:id/moreOperateIV')
+    if share_button.exists:
+        share_button.click()
+        time.sleep(1)
+        copy_button = device(resourceId='com.xingin.xhs:id/j_8', text='复制链接')
+        if copy_button.wait(timeout= 3) and copy_button.exists:
+            copy_button.click()
+            time.sleep(1)
+            xhs_link = get_clipboard_text(device)
+            if xhs_link:
+                # 正则表达式提取链接
+                link_pattern = r"http[s]?://[^\s，]+"
+                links = re.findall(link_pattern, xhs_link)
+                if len(links) > 0:
+                    article['link'] = links[0]
+                else:
+                    article['link'] = ""
+        else:
+            logger.error(f'设备：{device.serial}:没有找到复制按钮')
+    image_path = device.serial + "\\" + article["title"] + article["username"]
+    export_gallery_to_computer(image_path, device.serial)
+    return article
 
 
 # '65 Amber Lee发布了一篇小红书笔记，快来看吧！ 😆 Dirvawmprxtvxhh 😆 Http://Xhslink.Com/A/Uycel4Cdziv3，复制本条信息，打开【小红书】App查看精彩内容！'
-def swipe_up(d):
-    # 获取设备的屏幕尺寸
-    device_width, device_height = d.window_size()
-
-    # 定义滑动的起始点和结束点
-    start_x = device_width // 2
-    start_y = device_height * 3 // 4
-    end_x = start_x
-    end_y = device_height // 4
-
-    # 模拟上滑手势
-    d.swipe(start_x, start_y, end_x, end_y)
+# def swipe_up(d):
+#     # 获取设备的屏幕尺寸
+#     device_width, device_height = d.window_size()
+#
+#     # 定义滑动的起始点和结束点
+#     start_x = device_width // 2
+#     start_y = device_height * 3 // 4
+#     end_x = start_x
+#     end_y = device_height // 4
+#
+#     # 模拟上滑手势
+#     d.swipe(start_x, start_y, end_x, end_y)
 
 
 def click_search(device):
@@ -246,8 +247,12 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
         logger.info("Performing Follow...")
         open_xhs_user_home(device.serial, tweet_url)
         return concern_post(device)
+    elif action_type == OperateEnums.COLLECT:
+        logger.info("Performing COLLECT...")
+        restart_xhs(device)
+        return collect_articles(device)
     else:
-        logger.warning("Invalid action type. Please use 1 for Retweet,2for Concern, 3 for Comment, or 4 for Like.")
+        logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
         return False
 
 
@@ -497,42 +502,42 @@ def click_tab(d, tab_type):
 #                                    soft_type)
 
 
-# def save_image(device, count):
-#     times = 1
-#     while True:
-#         image_area = device(resourceId="com.xingin.xhs:id/dq7")
-#         if image_area.wait(timeout=1) and image_area.exists:
-#             image_area.long_click(duration=1)
-#             save_button = device(resourceId="com.xingin.xhs:id/cr_", text="保存")
-#             if save_button.wait(timeout=1) and save_button.exists:
-#                 save_button.click()
-#             else:
-#                 logger.error(f"{device.serial} 没有找到保存按钮")
-#         else:
-#             logger.error(f"{device.serial} 没有找到图片区域")
-#         times += 1
-#         if times > count:
-#             break
-#         left_swipe(device, image_area)
+def save_image(device, count):
+    times = 1
+    while True:
+        image_area = device(resourceId="com.xingin.xhs:id/dq7")
+        if image_area.wait(timeout=1) and image_area.exists:
+            image_area.long_click(duration=1)
+            save_button = device(resourceId="com.xingin.xhs:id/cr_", text="保存")
+            if save_button.wait(timeout=1) and save_button.exists:
+                save_button.click()
+            else:
+                logger.error(f"{device.serial} 没有找到保存按钮")
+        else:
+            logger.error(f"{device.serial} 没有找到图片区域")
+        times += 1
+        if times > count:
+            break
+        left_swipe(device, image_area)
 
 
-# def left_swipe(device, image_area):
-#     bounds = get_element_bounds(image_area)
-#     start_x, start_y = bounds[0] + bounds[2] // 2, bounds[1] + bounds[3] // 2
-#     end_x, end_y = bounds[0], bounds[1] + bounds[3] // 2
-#     device.swipe(start_x, start_y, end_x, end_y, duration=0.1)
+def left_swipe(device, image_area):
+    bounds = get_element_bounds(image_area)
+    start_x, start_y = bounds[0] + bounds[2] // 2, bounds[1] + bounds[3] // 2
+    end_x, end_y = bounds[0], bounds[1] + bounds[3] // 2
+    device.swipe(start_x, start_y, end_x, end_y, duration=0.1)
 
 
-# def get_image_count(device):
-#     image_area = device(resourceId="com.xingin.xhs:id/dqe")
-#     if image_area.exists:
-#         text = image_area.get_text()
-#         text_arr = text.split("/")
-#         count = text_arr[1]
-#         logger.info(f"设备：{device.serial}: 自动采集已识别 {count} 张图片")
-#         return count
-#     else:
-#         return 0
+def get_image_count(device):
+    image_area = device(resourceId="com.xingin.xhs:id/dqe")
+    if image_area.exists:
+        text = image_area.get_text()
+        text_arr = text.split("/")
+        count = text_arr[1]
+        logger.info(f"设备：{device.serial}: 自动采集已识别 {count} 张图片")
+        return count
+    else:
+        return 0
 
 
 # 清除保存的文件

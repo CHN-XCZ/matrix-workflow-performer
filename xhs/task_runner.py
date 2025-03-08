@@ -42,6 +42,10 @@ def start_script_by_type(device_id, operate_cmd, task_json, soft_type=4):
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始关注操作")
                 user_id = task_json['user_id']
                 is_success = start_link_reply_retweet(device_id, user_id, start_type=3, soft_type=soft_type)
+            # 采集
+            elif operation == OperateEnums.COLLECT:
+                logger.info(f"[主动任务] 设备ID: {device_id} 开始采集操作")
+                is_success = start_link_reply_retweet(device_id, "",start_type=4, soft_type=soft_type)
             else:
                 return False
             return is_success
@@ -60,7 +64,8 @@ def start_link_reply_retweet(param_serial, param_link, title = None, img_url=Non
                 (0, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
                 (1, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.REPLY, content=comment),
                 (2, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.LIKE, content=comment),
-                (3, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.FOLLOW, content=comment)
+                (3, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.FOLLOW, content=comment),
+                (4, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.COLLECT, content=comment)
             }
             return operations.get((start_type, soft_type), lambda: False)()
 

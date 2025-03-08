@@ -56,7 +56,7 @@ def scheduler_executor_heartbeat_queue():
                 "id": "1",
                 "type": "xhs",
                 "data": {
-                    "operate_cmd": "3",
+                    "operate_cmd": "4",
                     "task_json": {
                         "title": "hhhkl",
                         "content": "hhhkl",

@@ -6,10 +6,12 @@ class OperateEnums(Enum):
     # 1 评论
     # 2 点赞
     # 3 关注
+    # 4 采集
     POST = 0
     REPLY = auto()
     LIKE = auto()
     FOLLOW = auto()
+    COLLECT = auto()
 
     @classmethod
     def from_str(cls, value: str):
