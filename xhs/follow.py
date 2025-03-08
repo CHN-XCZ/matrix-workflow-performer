@@ -5,22 +5,11 @@ import time
 from loguru import logger
 
 from enums.xhs_enums import OperateEnums
-# from enums import OperateEnums
 from utils.click import click_resource_timeout_button
 from utils.image import os_push_image, select_image_in_gallery
 from utils.str import extract_filename_from_url
 from xhs.common import restart_xhs
-
-# import x_app
-# from aie.common import is_element_within_bounds, get_element_bounds
-# from aie.file import read_from_json, is_content_in_list, write_to_json
-# from util.click import click_resource_timeout_button
-# from util.clipboard import get_clipboard_text
-# from util.str import extract_filename_from_url
-# from x.photo import os_push_image
-# from xhsv2.photo import select_image_in_gallery
-# from xhsv2.common import restart_xhs
-# from xhsv2.xhs_enum import OperateEnums
+from xhs.intent import open_xhs_link, open_xhs_user_home
 
 local_directory = "D:\\work\\groupc\\xhsv2\\image\\"
 
@@ -228,7 +217,7 @@ def open_tweet_link(device, tweet_url):
     time.sleep(3)
 
 
-def operate_xhs_link(device, tweet_url, action_type=None, content=None):
+def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, content=None):
     """
     打开指定的推文链接，并执行相应的操作（转发、评论、点赞）。
 
@@ -240,31 +229,53 @@ def operate_xhs_link(device, tweet_url, action_type=None, content=None):
         3 - 评论
         4 - 点赞
     """
-    open_tweet_link(device, tweet_url)
     # time.sleep(3)
     # 根据操作类型执行不同的动作
     if action_type == OperateEnums.POST:
         logger.info(f"Performing Concern...")
-        return open_new_post(device, )
+        return open_new_post(device, img_url, title, content)
     elif action_type == OperateEnums.REPLY:
         logger.info(f"Performing Comment...{content}")
+        open_xhs_link(tweet_url, device.serial)
         return reply_post(device, content)
     elif action_type == OperateEnums.LIKE:
         logger.info("Performing Like...")
-        return like_post(device, tweet_url)
+        open_xhs_link(tweet_url, device.serial)
+        return like_post(device)
+    elif action_type == OperateEnums.FOLLOW:
+        logger.info("Performing Follow...")
+        open_xhs_user_home(device.serial, tweet_url)
+        return concern_post(device)
     else:
         logger.warning("Invalid action type. Please use 1 for Retweet,2for Concern, 3 for Comment, or 4 for Like.")
         return False
 
 
 # 关注
+# def concern_post(device):
+#     try:
+#         has_concern = device(text='已关注', className='android.widget.TextView')
+#         if has_concern.wait(timeout=3) and has_concern.exists:
+#             logger.info("已经关注过了")
+#             return True
+#         concern = device(text='关注', className='android.widget.TextView')
+#         if concern.wait(timeout=5) and concern.exists:
+#             concern.click()
+#             time.sleep(1)
+#             logger.info("关注成功")
+#             return True
+#         return False
+#     except Exception as e:
+#         logger.exception(f"发生错误: {e}")
+#         return False
+
 def concern_post(device):
     try:
-        has_concern = device(text='已关注', className='android.widget.TextView')
+        has_concern = device(resourceId='com.xingin.xhs:id/jo8', text='发私信')
         if has_concern.wait(timeout=3) and has_concern.exists:
             logger.info("已经关注过了")
             return True
-        concern = device(text='关注', className='android.widget.TextView')
+        concern = device(resourceId='com.xingin.xhs:id/jo8', text='关注')
         if concern.wait(timeout=5) and concern.exists:
             concern.click()
             time.sleep(1)
@@ -284,41 +295,7 @@ def reply_post(device, reply_text):
     :param reply_text: 回复消息内容
     :param device: uiautomator2连接的设备对象
     """
-    # width, height = get_screen_size(device)
-    # tweet_index = 0
-    # is_break = False
-    # is_start = True
-    # previous_last_tweet_bounds = None
-    # last_tweet_bounds = 1
     try:
-        allow = device(resourceId='com.vivo.browser:id/buttonDefaultPositive', text='允许')
-        if allow.wait(timeout=3):
-            allow.click()
-            # while not is_break:
-            #     reference = device(resourceId='com.xingin.xhs:id/au2', className='android.widget.FrameLayout',
-            #                        index=0).child(resourceId='com.xingin.xhs:id/fc9')
-            #     print(reference)
-            #     tweet = device(resourceId='com.xingin.xhs:id/au2', className='android.widget.FrameLayout',
-            #                    index=tweet_index)
-            #     if not tweet.exists or is_start:
-            #         is_start = False
-            #         # 如果上次坐标与本次相同，说明滑到底了
-            #         if not previous_last_tweet_bounds == last_tweet_bounds:
-            #             # 使用屏幕尺寸动态计算滑动位置
-            #             start_x = width // 2
-            #             start_y = int(height * 0.8)  # 滑动起点接近屏幕底部
-            #             end_y = int(height * 0.2)  # 滑动终点接近屏幕顶部
-            #             device.swipe(start_x, start_y, start_x, end_y, duration=0.3)  # 下滑
-            #             time.sleep(2)  # 等待页面加载
-            #             last_tweet_bounds = reference.bounds()
-            #             previous_last_tweet_bounds = last_tweet_bounds
-            #         elif previous_last_tweet_bounds == last_tweet_bounds:
-            #             logger.warning("滑到底了，停止发送。")
-            #             is_break = True
-            #             break
-            #     elif tweet.exists:
-            #         tweet.click()
-            #         tweet_index += 1
         dvr = device(resourceId='com.xingin.xhs:id/dvr')
         if dvr.wait(timeout=5):
             dvr.click()
@@ -326,6 +303,7 @@ def reply_post(device, reply_text):
             device.send_keys(reply_text)
             time.sleep(1)
             device(text='发送', resourceId='com.xingin.xhs:id/fb0').click()
+            logger.info(f"设备号 {device.serial} 评论成功")
             return True
         return False
     except Exception as e:
@@ -336,6 +314,7 @@ def reply_post(device, reply_text):
 # 发布,不能发纯文字，没有Post_Type
 def open_new_post(device, image_url, title_text=None, content_text=None):
     restart_xhs(device)
+    # open_xhs_post(device.serial)
     try:
         if not image_url:
             logger.error(f"设备号 {device.serial} 未上传图片")
@@ -374,9 +353,8 @@ def open_new_post(device, image_url, title_text=None, content_text=None):
 
 
 # 点赞
-def like_post(device, tweet_url):
+def like_post(device):
     try:
-        open_tweet_link(device, tweet_url)
         like_button = device(resourceId='com.xingin.xhs:id/g7x')
         if like_button.wait(timeout=10) and like_button.exists:
             if like_button.info['selected']:

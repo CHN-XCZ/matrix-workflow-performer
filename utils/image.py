@@ -43,13 +43,12 @@ def select_image_in_gallery(device):
     参数:
         device: uiautomator2 连接的设备对象。
     """
-    # 等待相册页面加载
-    time.sleep(5)
+
     # 定位到相册的网格布局
     gallery_grid = device(resourceId="com.xingin.xhs:id/brd")
-    if gallery_grid.wait(timeout=5):
+    if gallery_grid.wait(timeout=30):
         # 获取网格中的第一个 FrameLayout 并点击
-        first_image = device(resourceId="com.xingin.xhs:id/ffv")[0]
+        first_image = device(resourceId="com.xingin.xhs:id/dr9")[0]
         if first_image.exists:
             first_image.click()
         else:

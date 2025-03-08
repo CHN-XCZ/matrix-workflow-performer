@@ -1,35 +1,24 @@
-from typing import Any, Mapping
-import uuid
+from concurrent.futures import ThreadPoolExecutor
 
 from core.matrix_workflow.workflow_runner.variables.variable_pool import VariablePool
 from core.matrix_workflow.graph.graph_engine import GraphEngine
 from core.matrix_workflow.graph.graph import Graph
-from app.schemas.matrix_workflow import MatrixWorkflowGraph
-from app.api.dep import DBSessoinDep
-from app.crud.matrix_workflow import get_matrix_workflow
+from xhs.device.adb_device import get_adb_path, get_connected_devices
 
+executor = ThreadPoolExecutor(max_workers=200)  # 设备线程池
 class MatrixWorkflowRunner:
-    def __init__(self, *, inputs_vars: Mapping[str, Any], workflow_id: uuid.UUID, db_session: DBSessoinDep):
-        self.input_vars = inputs_vars
-        self.db_session = db_session
-        self.workflow_id = workflow_id
-
-    async def run(self):
-        workflow = await get_matrix_workflow(self.db_session, self.workflow_id)
-
-        if not workflow:
-            raise Exception("Workflow not found")
+    def __init__(self, graph_config: dict[str, any], result_mapping: dict[str, any]):
+        self.graph_config = graph_config
+        self.result_mapping = result_mapping
 
 
-
-        variable_pool = VariablePool(input_variables=self.input_vars)
-
-        graph = MatrixWorkflowGraph.parse_raw(workflow.graph)
-        graph_cls_instance = Graph.init(graph.dict())
-        graph_engine = GraphEngine(graph=graph_cls_instance, variable_pool=variable_pool)
-        running_result = graph_engine.run_graph()
-
-        return {
-            "variables_pool": variable_pool.variable_dict,
-            "running_result": running_result
-        }
+    def run(self):
+        graph = Graph.init(self.graph_config)
+        variablePool = VariablePool()
+        adb_path = get_adb_path()
+        devices = get_connected_devices(adb_path)
+        if not devices:
+            raise Exception("No connected devices found.")
+        for device_id in devices:
+            graphEngine = GraphEngine(graph, variablePool, device_id, self.result_mapping)
+            executor.submit(graphEngine.run_graph())

@@ -5,9 +5,11 @@ class OperateEnums(Enum):
     # 0 发布
     # 1 评论
     # 2 点赞
+    # 3 关注
     POST = 0
     REPLY = auto()
     LIKE = auto()
+    FOLLOW = auto()
 
     @classmethod
     def from_str(cls, value: str):
