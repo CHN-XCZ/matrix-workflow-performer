@@ -4,8 +4,9 @@ from threading import Lock
 import uiautomator2
 from loguru import logger
 from enums.xhs_enums import OperateEnums
-from xhs import follow
-from xhs.device.adb_device import adb_connect_device
+from platform.xhs import follow
+from platform.xhs.device.adb_device import adb_connect_device
+from platform.facebook.u2_common import post_photo, comment_post, like_post, follow_user
 
 device_lock = defaultdict(Lock)
 
@@ -61,10 +62,19 @@ def start_link_reply_retweet(param_serial, param_link, title = None, img_url=Non
         # 根据类型执行操作
         def execute_operation():
             operations = {
+                 # 发布
                 (0, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
+                (0, 5): lambda: post_photo(device, param_link, comment),
+                # 评论
                 (1, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.REPLY, content=comment),
+                (1, 5): lambda: comment_post(device, param_link, comment),
+                # 点赞
                 (2, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.LIKE, content=comment),
+                (2, 5): lambda: like_post(device, param_link),
+                # 关注
                 (3, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.FOLLOW, content=comment),
+                (3, 5): lambda: follow_user(device, param_link),
+                # 采集
                 (4, 4): lambda: follow.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.COLLECT, content=comment)
             }
             return operations.get((start_type, soft_type), lambda: False)()

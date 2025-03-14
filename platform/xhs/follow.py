@@ -10,8 +10,8 @@ from utils.click import click_resource_timeout_button
 from utils.clipboard import get_clipboard_text
 from utils.image import os_push_image, select_image_in_gallery
 from utils.str import extract_filename_from_url
-from xhs.common import restart_xhs, is_element_within_bounds, get_element_bounds
-from xhs.intent import open_xhs_link, open_xhs_user_home
+from platform.xhs.common import restart_xhs, is_element_within_bounds, get_element_bounds
+from platform.xhs.intent import open_xhs_link, open_xhs_user_home
 
 local_directory = "D:\\work\\matrix-workflow-performer\\collect\\images\\"
 

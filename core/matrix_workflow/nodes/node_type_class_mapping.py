@@ -1,3 +1,4 @@
+from core.matrix_workflow.nodes.facebook.face_node import FaceBookNode
 from core.matrix_workflow.nodes.node_type import NodeType
 
 from core.matrix_workflow.nodes.base.base_node import BaseNode
@@ -12,5 +13,6 @@ node_type_class_mapping: dict[NodeType, type[BaseNode]] = {
     NodeType.END: EndNode,
     NodeType.ADD: AddNode,
     NodeType.MINUS: MinusNode,
-    NodeType.XHS: XhsNode
+    NodeType.XHS: XhsNode,
+    NodeType.FACEBOOK: FaceBookNode
 }

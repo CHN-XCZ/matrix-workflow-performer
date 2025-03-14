@@ -8,3 +8,4 @@ class NodeType(str, Enum):
     MULTIPLY = 'multiply'
     DIVIDE = 'divide'
     XHS = 'xhs'
+    FACEBOOK = 'facebook'

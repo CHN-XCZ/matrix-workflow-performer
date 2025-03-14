@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from core.matrix_workflow.workflow_runner.variables.variable_pool import VariablePool
 from core.matrix_workflow.graph.graph_engine import GraphEngine
 from core.matrix_workflow.graph.graph import Graph
-from xhs.device.adb_device import get_adb_path, get_connected_devices
+from platform.xhs.device.adb_device import get_adb_path, get_connected_devices
 
 executor = ThreadPoolExecutor(max_workers=200)  # 设备线程池
 class MatrixWorkflowRunner:
