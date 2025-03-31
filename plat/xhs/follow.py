@@ -34,10 +34,10 @@ def collect_articles(d):
                     article = get_article(d, count)
                     if article is not None:
                         skip = False
-                        if article["title"] == "" and article["tweet"] == "" and article["username"] == "":
+                        if article["title"] == "" and article["content"] == "" and article["username"] == "":
                             skip = True
                         for art in articles:
-                            if article["title"] == art["title"] and article["tweet"] == art["tweet"]:
+                            if article["title"] == art["title"] and article["content"] == art["content"]:
                                 skip = True
                                 break
                         if skip:
@@ -68,9 +68,9 @@ def get_article(device, count):
     articles_area = device(resourceId='com.xingin.xhs:id/dqd')
     if articles_area.exists:
         article_text = articles_area.get_text()
-        article['tweet'] = article_text
+        article['content'] = article_text
     else:
-        article['tweet'] = ""
+        article['content'] = ""
         logger.error(f'设备：{device.serial}:没有找到文章内容')
     user_button = device(resourceId='com.xingin.xhs:id/nickNameTV')
     if user_button.exists:
@@ -254,25 +254,6 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
     else:
         logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
         raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
-
-
-# 关注
-# def concern_post(device):
-#     try:
-#         has_concern = device(text='已关注', className='android.widget.TextView')
-#         if has_concern.wait(timeout=3) and has_concern.exists:
-#             logger.info("已经关注过了")
-#             return True
-#         concern = device(text='关注', className='android.widget.TextView')
-#         if concern.wait(timeout=5) and concern.exists:
-#             concern.click()
-#             time.sleep(1)
-#             logger.info("关注成功")
-#             return True
-#         return False
-#     except Exception as e:
-#         logger.exception(f"发生错误: {e}")
-#         return False
 
 def concern_post(device):
     try:

@@ -20,7 +20,6 @@ def start_script_by_type(device_id, operate_cmd, task_json, soft_type=4):
             # 发送推文
             if  operation == OperateEnums.POST:
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始发送推文操作")
-                device = adb_connect_device(device_id)
                 xhs_content = task_json['content']
                 title = task_json.get('title')  # 如果不存在，默认为 None
                 img_url = task_json.get('img_url')  # 如果不存在，默认为 None

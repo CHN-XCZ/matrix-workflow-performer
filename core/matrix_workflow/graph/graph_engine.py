@@ -4,6 +4,7 @@ from core.matrix_workflow.nodes.node_type import NodeType
 from core.matrix_workflow.nodes.node_type_class_mapping import node_type_class_mapping
 from core.matrix_workflow.nodes.node_type_convert_mapping import node_type_convert_mapping, node_operate_convert_mapping
 from core.matrix_workflow.workflow_runner.variables.variable_pool import VariablePool
+from enums.xhs_enums import OperateEnums
 
 
 class GraphEngine:
@@ -73,10 +74,10 @@ class GraphEngine:
                 self.variable_pool.add(("node_result", current_node_id), current_node_run_result)
 
                 # 将输出参数添加到变量池中
-                if current_node_run_result.outputs is not None and current_node_run_result.status:
-                    for key, value in current_node_run_result.outputs.items():
-                        self.variable_pool.add(("run_outputs", current_node_id, key), value)
-
+                if not current_node_instance.operate == OperateEnums.COLLECT.value:
+                    if current_node_run_result.outputs is not None and current_node_run_result.status:
+                        for key, value in current_node_run_result.outputs.items():
+                            self.variable_pool.add(("run_outputs", current_node_id, key), value)
                 result_list.append(current_node_run_result)
 
                 if current_node_type == NodeType.END:
