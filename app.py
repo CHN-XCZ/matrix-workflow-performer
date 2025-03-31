@@ -1,5 +1,8 @@
+import json
 import queue
 from concurrent.futures import ThreadPoolExecutor
+
+import requests
 from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
@@ -12,11 +15,11 @@ scheduler = None
 
 task_queue = queue.Queue()
 
-heartbeat_request_url = "http://127.0.0.1:8000/api/v1/heartbeat"
+heartbeat_request_url = "http://192.168.5.13:8000/api/matrix/task/retrieve-task"
+report_request_url = "http://192.168.5.13:8000/api/matrix/task/results"
 
 
 def init_scheduled_job():
-    #     TODO: 定时获取graph任务
     global scheduler
     if not scheduler:
         scheduler = BackgroundScheduler()
@@ -24,93 +27,55 @@ def init_scheduled_job():
         scheduler.start()
         logger.info("定时任务执行")
 
-
 def scheduler_executor_heartbeat_queue():
     global task_queue
     try:
-        # response = requests.get(heartbeat_request_url)
-        # if response.status_code != 200:
-        #     logger.error('scheduler, heartbeat request error， code != 200, response: {}'.format(response))
-        #     return
-        # result_arr_json = json.loads(response.text)
-        # task_config = result_arr_json['data']
-        config = {
-            "edges": [{
-                "source": "0",
-                "target": "1"
-            },
-            #     {
-            #         "source": "1",
-            #         "target": "2"
-            #     },
-            # {
-            #     "source": "2",
-            #     "target": "3"
-            # }
-            ],
-            "nodes": [{
-                "id": "0",
-                "type": "start",
-                "data": "1"
-            }, {
-                "id": "1",
-                "type": "xhs",
-                "data": {
-                    "operate_cmd": "4",
-                    "task_json": {
-                        "title": "hhhkl",
-                        "content": "hhhkl",
-                        "img_url": "https://pic1.zhimg.com/v2-abed1a8c04700ba7d72b45195223e0ff_l.jpeg",
-                        "xhs_url": "67c81f10000000002903e864",
-                        "user_id": "6573bf0500000000190138da"
-                    }
-                }
-            },
-                # {
-                #     "id": "2",
-                #     "type": "xhs",
-                #     "data": {
-                #         "operate_cmd": "2",
-                #         "task_json": {
-                #             "title": "hhhkl",
-                #             "content": "hhhkl",
-                #             "img_url": "https://pic1.zhimg.com/v2-abed1a8c04700ba7d72b45195223e0ff_l.jpeg",
-                #             "xhs_url": "67c81f10000000002903e864"
-                #         }
-                #     }
-                # },
-                # {
-                #     "id": "3",
-                #     "type": "xhs",
-                #     "data": {
-                #         "operate_cmd": "3",
-                #         "task_json": {
-                #             "title": "hhhkl",
-                #             "content": "hhhkl",
-                #             "img_url": "https://pic1.zhimg.com/v2-abed1a8c04700ba7d72b45195223e0ff_l.jpeg",
-                #             "xhs_url": "67c81f10000000002903e864",
-                #             "user_id": "6573bf0500000000190138da"
-                #         }
-                #     }
-                # }
-            ],
-        }
-        task_queue.put(config)
+        response = requests.get(heartbeat_request_url)
+        if response.status_code != 200:
+            # logger.error('scheduler, heartbeat request error， code != 200, response: {}'.format(response))
+            return
+        result_arr_json = json.loads(response.text)
+        task_config = result_arr_json['data']
+        task_queue.put(task_config)
     except Exception as e:
         logger.error('scheduler, heartbeat request error, {}'.format(e))
 
-
 def run_task():
+
     while True:
-        global task_queue
-        if task_queue.empty():
-            continue
-        task_config = task_queue.get()
-        logger.info('run task, graph_config: {}'.format(task_config))
-        result_Mapping = {}
-        MatrixWorkflowRunner(task_config, result_Mapping).run()
-        # TODO 调用任务回调接口
-        logger.info('run task, result_Mapping: {}'.format(result_Mapping))
+        try:
+            global task_queue
+            if task_queue.empty():
+                continue
+            task_config = task_queue.get()
+            logger.info('run task, graph_config: {}'.format(task_config))
+            flow_run_result = MatrixWorkflowRunner(task_config).run()
+            report = {}
+            # TODO 调用任务回调接口
+            if len(flow_run_result) >=1:
+                count = 0
+                for key, value in flow_run_result.items():
+                    if value.status:
+                        count +=1
+                if count == len(flow_run_result):
+                    report["status"] = 0
+                elif 0 < count < len(flow_run_result):
+                    report["status"] = 1
+                else:
+                    report["status"] = 2
+                report["task_uuid"] = task_config['uuid']
+                report["results"] = {
+                    key: result.to_dict()  # 对每个 DeviceRunResult 调用 to_dict()
+                    for key, result in flow_run_result.items()
+                }
+                response = requests.post(report_request_url, json=report)
+                if response.status_code!= 201:
+                    logger.error('run task, report request error， code!= 201, response: {}'.format(response))
+                else:
+                    logger.info('run task, report request success')
+            logger.info('run task, result_Mapping: {}'.format(flow_run_result))
+        except Exception as e:
+            logger.error('run task, error, {}'.format(e))
 
 
 def init_task_runner():

@@ -3,9 +3,6 @@ from enum import Enum
 class NodeType(str, Enum):
     START = 'start'
     END = 'end'
-    ADD = 'add'
-    MINUS = 'minus'
-    MULTIPLY = 'multiply'
-    DIVIDE = 'divide'
+    IF_ELSE = 'if_else'
     XHS = 'xhs'
     FACEBOOK = 'facebook'

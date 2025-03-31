@@ -34,6 +34,7 @@ def restart_xhs(d):
         time.sleep(3)
     except Exception as e:
         logger.exception(f"启动xhs应用时发生错误: {e}")
+        raise e
 
 def is_element_within_bounds(element, target_bounds):
     """

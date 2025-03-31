@@ -4,9 +4,9 @@ from threading import Lock
 import uiautomator2
 from loguru import logger
 from enums.xhs_enums import OperateEnums
-from platform.xhs import follow
-from platform.xhs.device.adb_device import adb_connect_device
-from platform.facebook.u2_common import post_photo, comment_post, like_post, follow_user
+from plat.xhs import follow
+from plat.xhs.device.adb_device import adb_connect_device
+from plat.facebook.u2_common import post_photo, comment_post, like_post, follow_user
 
 device_lock = defaultdict(Lock)
 
@@ -48,11 +48,11 @@ def start_script_by_type(device_id, operate_cmd, task_json, soft_type=4):
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始采集操作")
                 is_success = start_link_reply_retweet(device_id, "",start_type=4, soft_type=soft_type)
             else:
-                return False
+                raise Exception(f"[主动任务] 设备ID: {device_id} 不支持的操作:{operation}")
             return is_success
         except Exception as e:
             logger.error('scheduler, script by type error: {}', e)
-            return False
+            raise e
 
 def start_link_reply_retweet(param_serial, param_link, title = None, img_url=None, comment=None, start_type=1, soft_type=4):
     try:
@@ -83,4 +83,4 @@ def start_link_reply_retweet(param_serial, param_link, title = None, img_url=Non
         return operate_status
     except Exception as e:
         logger.error('login error: {}', e)
-        return False
+        raise e

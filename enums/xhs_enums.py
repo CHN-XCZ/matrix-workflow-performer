@@ -14,9 +14,9 @@ class OperateEnums(Enum):
     COLLECT = auto()
 
     @classmethod
-    def from_str(cls, value: str):
+    def from_str(cls, value: int):
         """根据字符串值获取枚举成员"""
         for member in cls:
-            if str(member.value) == value:  # 将枚举值转为字符串进行比较
+            if member.value == value:
                 return member
         raise ValueError(f"{value} is not a valid HeartOperate value")

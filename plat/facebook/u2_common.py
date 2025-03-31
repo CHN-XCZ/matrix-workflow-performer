@@ -3,10 +3,10 @@ import time
 import uiautomator2 as u2
 from loguru import logger
 
-from platform.facebook.util.common import open_link, restart_app
-from platform.facebook.util.element_common import click_by_Xpath, get_text_by_className, \
+from plat.facebook.util.common import open_link, restart_app
+from plat.facebook.util.element_common import click_by_Xpath, get_text_by_className, \
     check_element_exists_by_Xpath, paste_text_by_className
-from platform.facebook.util.image import clear_camera_cache, extract_filename_from_url, os_push_image
+from plat.facebook.util.image import clear_camera_cache, extract_filename_from_url, os_push_image
 
 
 # 获取个人信息

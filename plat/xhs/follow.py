@@ -10,8 +10,8 @@ from utils.click import click_resource_timeout_button
 from utils.clipboard import get_clipboard_text
 from utils.image import os_push_image, select_image_in_gallery
 from utils.str import extract_filename_from_url
-from platform.xhs.common import restart_xhs, is_element_within_bounds, get_element_bounds
-from platform.xhs.intent import open_xhs_link, open_xhs_user_home
+from plat.xhs.common import restart_xhs, is_element_within_bounds, get_element_bounds
+from plat.xhs.intent import open_xhs_link, open_xhs_user_home
 
 local_directory = "D:\\work\\matrix-workflow-performer\\collect\\images\\"
 
@@ -253,7 +253,7 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
         return collect_articles(device)
     else:
         logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
-        return False
+        raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
 
 
 # 关注
@@ -289,7 +289,7 @@ def concern_post(device):
         return False
     except Exception as e:
         logger.exception(f"发生错误: {e}")
-        return False
+        raise e
 
 
 # 评论
@@ -313,7 +313,7 @@ def reply_post(device, reply_text):
         return False
     except Exception as e:
         logger.exception(f"发生错误: {e}")
-        return False
+        raise e
 
 
 # 发布,不能发纯文字，没有Post_Type
@@ -354,7 +354,7 @@ def open_new_post(device, image_url, title_text=None, content_text=None):
         return True
     except Exception as e:
         logger.exception(f"发生错误: {e}")
-        return False
+        raise e
 
 
 # 点赞
@@ -371,7 +371,7 @@ def like_post(device):
         return False
     except Exception as e:
         logger.exception(f"发生错误: {e}")
-        return False
+        raise e
 
 
 '''

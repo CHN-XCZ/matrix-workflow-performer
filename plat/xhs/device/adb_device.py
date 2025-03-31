@@ -1,5 +1,7 @@
 import os
 import platform
+
+import plat
 import subprocess
 from loguru import logger
 import uiautomator2 as u2

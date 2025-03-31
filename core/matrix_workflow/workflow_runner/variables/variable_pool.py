@@ -45,7 +45,6 @@ class VariablePool(BaseModel):
 
         self.variable_dict[selector[0]][hash_key] = value
 
-
     def remove(self, selector: Sequence[str], /):
 
         if not selector:
