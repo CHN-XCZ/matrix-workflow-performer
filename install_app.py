@@ -1,10 +1,10 @@
 import subprocess
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 
 from plat.xhs.device.adb_device import get_connected_devices, get_adb_path
 
 app_path = "D:\\work\\matrix-workflow-performer\\apps\\xhs.apk"
-task_executor = ThreadPoolExecutor(max_workers=100)
+task_executor = ThreadPoolExecutor(max_workers=50)
 
 
 def install_app(device_id):
@@ -21,8 +21,12 @@ def install_app(device_id):
 if __name__ == '__main__':
     adb_path = get_adb_path()
     devices = get_connected_devices(adb_path)
+    future_list = []
     if not devices:
         print("no devices found")
         exit(1)
     for device_id in devices:
-        task_executor.submit(install_app, device_id)
+        # install_app(device_id)
+        future_list.append(task_executor.submit(install_app, device_id))
+
+    wait(future_list, return_when=ALL_COMPLETED)
