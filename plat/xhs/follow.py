@@ -37,7 +37,7 @@ def collect_articles(d):
                         if article["title"] == "" and article["content"] == "" and article["username"] == "":
                             skip = True
                         for art in articles:
-                            if article["title"] == art["title"] and article["content"] == art["content"]:
+                            if article["title"] == art["title"] and article["content"] == art["tweet"]:
                                 skip = True
                                 break
                         if skip:
@@ -47,11 +47,13 @@ def collect_articles(d):
                         articles.append(article)
                     d.press('back')
         logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
+        if len(articles) == 0:
+            raise Exception("没有找到文章")
         return articles
     except Exception as e:
         logger.error(f'设备号{d.serial}: 采集小红书文章时发生错误{e}')
         logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
-        return articles
+        raise e
 
 
 def get_article(device, count):
@@ -59,32 +61,32 @@ def get_article(device, count):
     save_image(device, count)
     article = {}
     title_button = device(resourceId='com.xingin.xhs:id/g8t')
-    if title_button.exists:
+    if title_button.wait(timeout=10):
         title = title_button.get_text()
         article['title'] = title
     else:
         article['title'] = ""
         logger.error(f'设备：{device.serial}:没有找到文章标题')
     articles_area = device(resourceId='com.xingin.xhs:id/dqd')
-    if articles_area.exists:
+    if articles_area.wait(timeout=10):
         article_text = articles_area.get_text()
-        article['content'] = article_text
+        article['tweet'] = article_text
     else:
-        article['content'] = ""
+        article['tweet'] = ""
         logger.error(f'设备：{device.serial}:没有找到文章内容')
     user_button = device(resourceId='com.xingin.xhs:id/nickNameTV')
-    if user_button.exists:
+    if user_button.wait(timeout=10):
         user = user_button.get_text()
         article['username'] = user
     else:
         article['username'] = ""
         logger.error(f'设备：{device.serial}:没有找到用户名称')
     share_button = device(resourceId='com.xingin.xhs:id/moreOperateIV')
-    if share_button.exists:
+    if share_button.wait(timeout=10):
         share_button.click()
         time.sleep(1)
         copy_button = device(resourceId='com.xingin.xhs:id/j_8', text='复制链接')
-        if copy_button.wait(timeout= 3) and copy_button.exists:
+        if copy_button.wait(timeout= 10) and copy_button.exists:
             copy_button.click()
             time.sleep(1)
             xhs_link = get_clipboard_text(device)
