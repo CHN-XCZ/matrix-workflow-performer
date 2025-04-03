@@ -7,7 +7,7 @@ from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
 
-from core.matrix_workflow.workflow_runner.runner import MatrixWorkflowRunner
+from core.matrix_workflow.workflow_runner.runner import MatrixWorkflowRunner, post_task
 
 task_executor = ThreadPoolExecutor(max_workers=10)  # 任务线程池
 
@@ -94,6 +94,7 @@ if __name__ == '__main__':
     logger.info('程序初始化 ...')
     init_scheduled_job()
     init_task_runner()
+    post_task()
     logger.info('初始化结束 ...')
     # use_reloader=False 禁用自动重载，防止定时器触发两次
     app.run(host='0.0.0.0', port=9090, debug=True, use_reloader=False)

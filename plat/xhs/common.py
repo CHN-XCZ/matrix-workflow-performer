@@ -31,7 +31,7 @@ def restart_xhs(d):
         d.app_start("com.xingin.xhs")
         # logger.warning("xhs应用已启动")
         d.set_orientation("n")  # 设置为自然方向（竖屏）
-        time.sleep(3)
+        time.sleep(5)
     except Exception as e:
         logger.exception(f"启动xhs应用时发生错误: {e}")
         raise e
