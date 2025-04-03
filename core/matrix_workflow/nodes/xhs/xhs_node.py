@@ -22,8 +22,10 @@ class XhsNode(BaseNode):
             if self.operate == OperateEnums.COLLECT.value:
                 result = start_script_by_type(self.device_id, self.operate, task_json, soft_type=4)
                 if len(result) > 0:
+                    collect_result = {}
+                    collect_result["gather_result"] = result
                     self.result.status = True
-                    self.result.outputs = result
+                    self.result.outputs = collect_result
                 else:
                     self.result.status = False
             else:
