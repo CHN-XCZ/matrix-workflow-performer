@@ -13,8 +13,6 @@ from utils.str import extract_filename_from_url
 from plat.xhs.common import restart_xhs, is_element_within_bounds, get_element_bounds
 from plat.xhs.intent import open_xhs_link, open_xhs_user_home
 
-local_directory = "D:\\work\\matrix-workflow-performer\\collect\\images\\"
-
 
 def collect_articles(d):
     articles = []
@@ -543,8 +541,16 @@ def clear_gallery(serial):
 
 # device_gallery_path = "/sdcard/DCIM/*.jpg"  local_directory = D:\work\groupc\xhsv2\image
 def export_gallery_to_computer(image_path, serial, device_gallery_path = "/sdcard/DCIM/"):
-    # 检查本地目录是否存在，如果不存在则创建
-    local_path = local_directory + image_path
+    # current_file_path = os.path.abspath(__file__)
+    # # 向上三层目录
+    # parent_dir = os.path.dirname(current_file_path)
+    # grandparent_dir = os.path.dirname(parent_dir)
+    # great_grandparent_dir = os.path.dirname(grandparent_dir)
+
+    # local_path = great_grandparent_dir + "\\collect\\images" + image_path
+    local_path ="../../collect/images" + image_path
+    logger.info(f"导出图片到本地：{local_path}")
+
     if not os.path.exists(local_path):
         os.makedirs(local_path)
     command = f"adb -s {serial} shell ls {device_gallery_path}"
@@ -570,3 +576,13 @@ def export_gallery_to_computer(image_path, serial, device_gallery_path = "/sdcar
 #     # local = "test"
 #     # export_gallery_to_computer(device_gallery_path, local)
 #     # clear_gallery()
+if __name__ == '__main__':
+    # 获取当前文件的绝对路径
+    current_file_path = os.path.abspath(__file__)
+
+    # 向上三层目录
+    parent_dir = os.path.dirname(current_file_path)
+    grandparent_dir = os.path.dirname(parent_dir)
+    great_grandparent_dir = os.path.dirname(grandparent_dir)
+
+    print("向上三层目录:", great_grandparent_dir)

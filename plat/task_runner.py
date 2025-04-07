@@ -28,15 +28,15 @@ def start_script_by_type(device_id, operate_cmd, task_json, soft_type=4):
             elif operation == OperateEnums.REPLY:
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始评论操作")
                 xhs_content = task_json['content']
-                xhs_url = task_json['xhs_url']
+                post_url = task_json['post_url']
                 img_url = task_json.get('img_url')
-                is_success = start_link_reply_retweet(device_id, xhs_url, img_url=img_url, comment=xhs_content,
+                is_success = start_link_reply_retweet(device_id, post_url, img_url=img_url, comment=xhs_content,
                                                       start_type=1, soft_type=soft_type)
             # 点赞
             elif operation == OperateEnums.LIKE:
                 logger.info(f"[ActiveTask] 设备ID: {device_id} 开始点赞操作")
-                xhs_url = task_json['xhs_url']
-                is_success = start_link_reply_retweet(device_id, xhs_url, start_type=2, soft_type=soft_type)
+                post_url = task_json['post_url']
+                is_success = start_link_reply_retweet(device_id, post_url, start_type=2, soft_type=soft_type)
             # 关注
             elif operation == OperateEnums.FOLLOW:
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始关注操作")

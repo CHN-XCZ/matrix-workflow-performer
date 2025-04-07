@@ -1,6 +1,6 @@
 from core.matrix_workflow.nodes.base.base_node import BaseNode
 from core.matrix_workflow.nodes.node_type import NodeType
-from plat.xhs.task_runner import start_script_by_type
+from plat.task_runner import start_script_by_type
 
 
 class FaceBookNode(BaseNode):

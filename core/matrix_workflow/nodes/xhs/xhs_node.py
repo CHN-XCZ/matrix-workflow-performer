@@ -4,7 +4,7 @@ from core.matrix_workflow.nodes.base.base_node import BaseNode
 from core.matrix_workflow.nodes.node_run_result import NodeRunResult
 from core.matrix_workflow.nodes.node_type import NodeType
 from enums.xhs_enums import OperateEnums
-from plat.xhs.task_runner import start_script_by_type
+from plat.task_runner import start_script_by_type
 
 
 class XhsNode(BaseNode):
@@ -51,12 +51,12 @@ class XhsNode(BaseNode):
                     task_json['img_url'] = self.variable_pool.get(("run_outputs", node_data["img_url"][0],node_data["img_url"][1]))
                     self.result.inputs[node_data["img_url"][1]]= task_json['img_url']
                 elif self.operate == OperateEnums.REPLY.value:
-                    task_json['xhs_url'] = self.variable_pool.get(("run_outputs", node_data["post_id"][0],node_data["post_id"][1]))
+                    task_json['post_url'] = self.variable_pool.get(("run_outputs", node_data["post_id"][0],node_data["post_id"][1]))
                     self.result.inputs[node_data["post_id"][1]]= task_json['xhs_url']
                     task_json['content'] = self.variable_pool.get(("run_outputs", node_data["content"][0],node_data["content"][1]))
                     self.result.inputs[node_data["content"][1]]= task_json['content']
                 elif self.operate == OperateEnums.LIKE.value:
-                    task_json['xhs_url'] = self.variable_pool.get(("run_outputs", node_data["post_id"][0],node_data["post_id"][1]))
+                    task_json['post_url'] = self.variable_pool.get(("run_outputs", node_data["post_id"][0],node_data["post_id"][1]))
                     self.result.inputs[node_data["post_id"][1]]= task_json['xhs_url']
                 elif self.operate == OperateEnums.FOLLOW.value:
                     task_json['user_id'] = self.variable_pool.get(("run_outputs", node_data["user_id"][0],node_data["user_id"][1]))
