@@ -37,7 +37,7 @@ def collect_articles(d):
                         if article["title"] == "" and article["content"] == "" and article["username"] == "":
                             skip = True
                         for art in articles:
-                            if article["title"] == art["title"] and article["content"] == art["tweet"]:
+                            if article["title"] == art["title"] and article["content"] == art["content"]:
                                 skip = True
                                 break
                         if skip:
@@ -70,9 +70,9 @@ def get_article(device, count):
     articles_area = device(resourceId='com.xingin.xhs:id/dqd')
     if articles_area.wait(timeout=10):
         article_text = articles_area.get_text()
-        article['tweet'] = article_text
+        article['content'] = article_text
     else:
-        article['tweet'] = ""
+        article['content'] = ""
         logger.error(f'设备：{device.serial}:没有找到文章内容')
     user_button = device(resourceId='com.xingin.xhs:id/nickNameTV')
     if user_button.wait(timeout=10):
