@@ -43,7 +43,7 @@ class MatrixWorkflowRunner:
                     flow_run_result.error = e.error
             flow_run_result.nodes_result = result
             flow_run_results[device_id] = flow_run_result
-        post_task()
+        # post_task()
         return flow_run_results
 
     # 临时生成任务

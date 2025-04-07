@@ -3,12 +3,12 @@ from loguru import logger
 from core.matrix_workflow.nodes.base.base_node import BaseNode
 from core.matrix_workflow.nodes.node_run_result import NodeRunResult
 from core.matrix_workflow.nodes.node_type import NodeType
-from enums.xhs_enums import OperateEnums
+from enums.tiktok_enums import OperateEnums
 from plat.task_runner import start_script_by_type
 
 
-class XhsNode(BaseNode):
-    _node_type = NodeType.XHS
+class TikTokNode(BaseNode):
+    _node_type = NodeType.TIKTOK
 
     def _run(self) -> NodeRunResult:
         try:
@@ -18,9 +18,9 @@ class XhsNode(BaseNode):
             #     raise Exception("[XhsNode] run failed: Previous node outputs not found!")
             task_json = self.init_task_json()
             if not task_json:
-                raise Exception("[XhsNode] run failed: Task json not found!")
+                raise Exception("[TikTokNode] run failed: Task json not found!")
             if self.operate == OperateEnums.COLLECT.value:
-                result = start_script_by_type(self.device_id, self.operate, task_json, soft_type=4)
+                result = start_script_by_type(self.device_id, self.operate, task_json, soft_type=6)
                 if len(result) > 0:
                     collect_result = {}
                     collect_result["gather_result"] = result
@@ -29,11 +29,11 @@ class XhsNode(BaseNode):
                 else:
                     self.result.status = False
             else:
-                status = start_script_by_type(self.device_id, self.operate, task_json, soft_type=4)
+                status = start_script_by_type(self.device_id, self.operate, task_json, soft_type=6)
                 self.result.status = status
             return self.result
         except Exception as e:
-            logger.error("[XhsNode] run error: {}", e)
+            logger.error("[TikTokNode] run error: {}", e)
             self.result.error = str(e)
             return self.result
 
@@ -46,10 +46,10 @@ class XhsNode(BaseNode):
                 if self.operate == OperateEnums.POST.value:
                     task_json['content'] = self.variable_pool.get(("run_outputs", node_data["content"][0],node_data["content"][1]))
                     self.result.inputs[node_data["content"][1]]= task_json['content']
-                    task_json['title'] = self.variable_pool.get(("run_outputs", node_data["title"][0],node_data["title"][1]))
-                    self.result.inputs[node_data["title"][1]]= task_json['title']
-                    task_json['img_url'] = self.variable_pool.get(("run_outputs", node_data["img_url"][0],node_data["img_url"][1]))
-                    self.result.inputs[node_data["img_url"][1]]= task_json['img_url']
+                    # task_json['title'] = self.variable_pool.get(("run_outputs", node_data["title"][0],node_data["title"][1]))
+                    # self.result.inputs[node_data["title"][1]]= task_json['title']
+                    task_json['img_url'] = self.variable_pool.get(("run_outputs", node_data["video_url"][0],node_data["video_url"][1]))
+                    self.result.inputs[node_data["video_url"][1]]= task_json['img_url']
                 elif self.operate == OperateEnums.REPLY.value:
                     task_json['post_url'] = self.variable_pool.get(("run_outputs", node_data["post_id"][0],node_data["post_id"][1]))
                     self.result.inputs[node_data["post_id"][1]]= task_json['post_url']
@@ -64,8 +64,8 @@ class XhsNode(BaseNode):
                 elif self.operate == OperateEnums.COLLECT.value:
                     task_json["collect"] = "collect"
                 else:
-                    logger.error("[XhsNode] init_task_json error: operate not found")
+                    logger.error("[TikTokNode] init_task_json error: operate not found")
             return task_json
         except Exception as e:
-            logger.error("[XhsNode] init_task_json error: {}", e)
+            logger.error("[TikTokNode] init_task_json error: {}", e)
             return None

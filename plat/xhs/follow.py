@@ -98,7 +98,8 @@ def get_article(device, count):
                     article['link'] = ""
         else:
             logger.error(f'设备：{device.serial}:没有找到复制按钮')
-    image_path = device.serial + "\\" + article["title"] + article["username"]
+    # image_path = device.serial + "\\" + article["title"] + article["username"]
+    image_path = os.path.join(device.serial, article["title"] + article["username"])
     export_gallery_to_computer(image_path, device.serial)
     return article
 
@@ -548,8 +549,9 @@ def export_gallery_to_computer(image_path, serial, device_gallery_path = "/sdcar
     # great_grandparent_dir = os.path.dirname(grandparent_dir)
 
     # local_path = great_grandparent_dir + "\\collect\\images" + image_path
-    local_path ="../../collect/images" + image_path
-    logger.info(f"导出图片到本地：{local_path}")
+    local_path = os.path.join(os.getcwd(), "collect", "images", image_path.lstrip("\\/"))
+    # local_path ="../../collect/images" + image_path
+    # logger.info(f"导出图片到本地：{local_path}")
 
     if not os.path.exists(local_path):
         os.makedirs(local_path)

@@ -6,11 +6,13 @@ from core.matrix_workflow.nodes.base.base_node import BaseNode
 from core.matrix_workflow.nodes.start.start_node import StartNode
 from core.matrix_workflow.nodes.end.end_node import EndNode
 from core.matrix_workflow.nodes.xhs.xhs_node import XhsNode
+from core.matrix_workflow.nodes.tiktok.tiktok_node import TikTokNode
 
 node_type_class_mapping: dict[NodeType, type[BaseNode]] = {
     NodeType.START: StartNode,
     NodeType.END: EndNode,
     NodeType.IF_ELSE: IfElseNode,
     NodeType.XHS: XhsNode,
-    NodeType.FACEBOOK: FaceBookNode
+    NodeType.FACEBOOK: FaceBookNode,
+    NodeType.TIKTOK: TikTokNode
 }

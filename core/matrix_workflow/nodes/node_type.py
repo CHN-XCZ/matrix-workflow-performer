@@ -6,3 +6,4 @@ class NodeType(str, Enum):
     IF_ELSE = 'if_else'
     XHS = 'xhs'
     FACEBOOK = 'facebook'
+    TIKTOK = 'tiktok'

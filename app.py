@@ -1,4 +1,5 @@
 import json
+import os
 import queue
 from concurrent.futures import ThreadPoolExecutor
 
@@ -15,8 +16,8 @@ scheduler = None
 
 task_queue = queue.Queue()
 
-heartbeat_request_url = "http://192.168.5.13:8000/api/matrix/task/retrieve-task"
-report_request_url = "http://192.168.5.13:8000/api/matrix/task/results"
+heartbeat_request_url = "http://192.168.5.198:8000/api/matrix/task/retrieve-task"
+report_request_url = "http://192.168.5.198:8000/api/matrix/task/results"
 
 
 def init_scheduled_job():
@@ -30,7 +31,7 @@ def init_scheduled_job():
 def scheduler_executor_heartbeat_queue():
     global task_queue
     try:
-        response = requests.get(heartbeat_request_url)
+        response = requests.post(heartbeat_request_url,json={"devices_list": []})
         if response.status_code != 200:
             # logger.error('scheduler, heartbeat request error， code != 200, response: {}'.format(response))
             return
@@ -94,7 +95,8 @@ if __name__ == '__main__':
     logger.info('程序初始化 ...')
     init_scheduled_job()
     init_task_runner()
-    post_task()
+
+    # post_task()
     logger.info('初始化结束 ...')
     # use_reloader=False 禁用自动重载，防止定时器触发两次
     app.run(host='0.0.0.0', port=9090, debug=True, use_reloader=False)
