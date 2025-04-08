@@ -1,7 +1,7 @@
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 
-from plat.xhs.device.adb_device import get_connected_devices, get_adb_path
+from plat.device.adb_device import get_connected_devices, get_adb_path
 
 app_path = "D:\\work\\matrix-workflow-performer\\apps\\xhs.apk"
 task_executor = ThreadPoolExecutor(max_workers=50)

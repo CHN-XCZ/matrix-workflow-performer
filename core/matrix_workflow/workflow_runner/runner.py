@@ -6,7 +6,7 @@ from core.matrix_workflow.nodes.node_run_result import DeviceRunResult
 from core.matrix_workflow.workflow_runner.variables.variable_pool import VariablePool
 from core.matrix_workflow.graph.graph_engine import GraphEngine
 from core.matrix_workflow.graph.graph import Graph
-from plat.xhs.device.adb_device import get_adb_path, get_connected_devices
+from plat.device.adb_device import get_adb_path, get_connected_devices
 from loguru import logger
 
 executor = ThreadPoolExecutor(max_workers=200)  # 设备线程池
@@ -27,6 +27,8 @@ class MatrixWorkflowRunner:
 
             # with executor as e:
         for device_id in devices:
+            if device_id not in self.graph_config["devices_list"]:
+                continue
             graphEngine = GraphEngine(graph, variablePool, device_id)
             future_list.append(executor.submit(graphEngine.run_graph))
             # self.result_mapping = graphEngine.result_mapping
@@ -50,15 +52,17 @@ class MatrixWorkflowRunner:
 
 
 def post_task():
-    post_task_url = "http://192.168.5.135:8000/api/matrix/task/f57e1cb3-e33e-474e-a5b8-0df03efadb5c/generate"
+    post_task_url = "http://192.168.5.198:8000/api/matrix/task/b5a38e84-050c-4ec2-9b5d-8c4db4b9aa9e/generate"
     inputs = {
         "input_variables": {
-            "like_id": "64",
-            "follow_id": "57",
-            "title": "111",
-            "img": "1111",
-            "content": "1111"
-        }
+            "like_post_id": "64",
+            "follow_user_id": "57",
+            "post_content": "111",
+            "post_video_url": "https://redleaf-app.oss-cn-beijing.aliyuncs.com/idolphone/Videos.mp4",
+            "comment_post_id": "1111",
+            "comment_content": "1111"
+        },
+        "devices_list": ["631d73a0"]
     }
     response = requests.post(post_task_url, json=inputs)
     if response.status_code == 201:

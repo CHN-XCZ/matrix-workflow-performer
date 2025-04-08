@@ -6,7 +6,7 @@ from loguru import logger
 from enums.xhs_enums import OperateEnums
 from enums.tiktok_enums import OperateEnums as TitkTokOperateEnums
 from plat.xhs import follow
-from plat.xhs.device.adb_device import adb_connect_device
+from plat.device.adb_device import adb_connect_device
 from plat.facebook.u2_common import post_photo, comment_post, like_post, follow_user
 from plat.tiktok import command
 

@@ -1,7 +1,10 @@
 import io
 import requests
+import uiautomator2
 from loguru import logger
 import time
+
+from utils.str import extract_filename_from_url
 
 
 def os_push_image(device, url, file_path):
@@ -55,3 +58,8 @@ def select_image_in_gallery(device):
             logger.warning("未找到图片")
     else:
         logger.warning("未打开相册")
+
+if __name__ == '__main__':
+    d = uiautomator2.connect()
+    file_path = extract_filename_from_url('https://pica.zhimg.com/v2-93a9c0544f7157ddd0b7ef52bcad358d_xl.jpg?source=32738c0c&needBackground=1')
+    os_push_image(d,"https://pica.zhimg.com/v2-93a9c0544f7157ddd0b7ef52bcad358d_xl.jpg?source=32738c0c&needBackground=1",file_path)

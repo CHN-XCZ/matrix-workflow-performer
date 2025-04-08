@@ -46,10 +46,15 @@ class TikTokNode(BaseNode):
                 if self.operate == OperateEnums.POST.value:
                     task_json['content'] = self.variable_pool.get(("run_outputs", node_data["content"][0],node_data["content"][1]))
                     self.result.inputs[node_data["content"][1]]= task_json['content']
+                    if node_data["title"]:
+                        task_json['title'] = self.variable_pool.get(("run_outputs", node_data["title"][0],node_data["title"][1]))
+                        self.result.inputs[node_data["title"][1]]= task_json['title']
+                    else:
+                        task_json["title"] = None
                     # task_json['title'] = self.variable_pool.get(("run_outputs", node_data["title"][0],node_data["title"][1]))
                     # self.result.inputs[node_data["title"][1]]= task_json['title']
-                    task_json['img_url'] = self.variable_pool.get(("run_outputs", node_data["video_url"][0],node_data["video_url"][1]))
-                    self.result.inputs[node_data["video_url"][1]]= task_json['img_url']
+                    task_json['img_url'] = self.variable_pool.get(("run_outputs", node_data["media_url"][0],node_data["media_url"][1]))
+                    self.result.inputs[node_data["media_url"][1]]= task_json['img_url']
                 elif self.operate == OperateEnums.REPLY.value:
                     task_json['post_url'] = self.variable_pool.get(("run_outputs", node_data["post_id"][0],node_data["post_id"][1]))
                     self.result.inputs[node_data["post_id"][1]]= task_json['post_url']

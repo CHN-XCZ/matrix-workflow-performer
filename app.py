@@ -9,6 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
 
 from core.matrix_workflow.workflow_runner.runner import MatrixWorkflowRunner, post_task
+from plat.device.adb_device import get_connected_devices, get_adb_path
 
 task_executor = ThreadPoolExecutor(max_workers=10)  # 任务线程池
 
@@ -31,7 +32,9 @@ def init_scheduled_job():
 def scheduler_executor_heartbeat_queue():
     global task_queue
     try:
-        response = requests.post(heartbeat_request_url,json={"devices_list": []})
+        adb_path = get_adb_path()
+        devices_list = get_connected_devices(adb_path)
+        response = requests.post(heartbeat_request_url,json={"devices_list": devices_list})
         if response.status_code != 200:
             # logger.error('scheduler, heartbeat request error， code != 200, response: {}'.format(response))
             return
@@ -53,6 +56,7 @@ def run_task():
             flow_run_result = MatrixWorkflowRunner(task_config).run()
             report = {}
             # TODO 调用任务回调接口
+            report["task_uuid"] = task_config['uuid']
             if len(flow_run_result) >=1:
                 count = 0
                 for key, value in flow_run_result.items():
@@ -64,7 +68,6 @@ def run_task():
                     report["status"] = 1
                 else:
                     report["status"] = 2
-                report["task_uuid"] = task_config['uuid']
                 report["results"] = {
                     key: result.to_dict()  # 对每个 DeviceRunResult 调用 to_dict()
                     for key, result in flow_run_result.items()

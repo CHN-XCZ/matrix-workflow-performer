@@ -16,7 +16,6 @@ def get_adb_path():
         # 2. 回退到项目根目录查找
         project_root = os.path.dirname(current_dir)
         project_root = os.path.dirname(project_root)
-        project_root = os.path.dirname(project_root)
         adb_dir = os.path.join(project_root, 'adb')
 
     # 3. 根据系统构建 adb 路径
