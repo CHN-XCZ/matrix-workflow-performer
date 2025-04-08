@@ -28,7 +28,7 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
     if action_type == OperateEnums.POST:
         logger.info(f"Performing Concern...")
         # return open_new_post(device, img_url, title, content)
-        open_new_post(device.serial, img_url, content)
+        open_new_post(device.serial, img_url, content, title)
         return True
     elif action_type == OperateEnums.REPLY:
         logger.info(f"Performing Comment...{content}")
@@ -50,7 +50,7 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
         raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
     
 
-def open_new_post(device_serial, media_url,content_text):
+def open_new_post(device_serial, media_url,content_text,title=None):
     d = u2.connect(device_serial)
     restart_tiktok(d)
     in_home = back_tiktok_home(device=d, timeout=20)
@@ -78,6 +78,12 @@ def open_new_post(device_serial, media_url,content_text):
         else:
             logger.error("[TIKTOK POST] post error: content area not found")
             raise Exception("[TIKTOK POST] post error: content area not found")
+        if title:
+            title_area = d(resourceId='com.zhiliaoapp.musically:id/en_')
+            if title_area.wait(10):
+                title_area.send_keys(title)
+            else:
+                logger.warning("[TIKTOK POST] post error: title area not found")
         d(resourceId='com.zhiliaoapp.musically:id/n_x').click_exists(timeout=10)
         # d(resourceId='com.zhiliaoapp.musically:id/na0').click_exists(timeout=10)
         return True

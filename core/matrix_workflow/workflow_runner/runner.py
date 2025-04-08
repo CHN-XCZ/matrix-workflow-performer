@@ -57,8 +57,9 @@ def post_task():
         "input_variables": {
             "like_post_id": "64",
             "follow_user_id": "57",
+            "title": "111",
             "post_content": "111",
-            "post_video_url": "https://redleaf-app.oss-cn-beijing.aliyuncs.com/idolphone/Videos.mp4",
+            "post_video_url": "https://kbtoken.oss-cn-beijing.aliyuncs.com/idolphone/Group244830895.png",
             "comment_post_id": "1111",
             "comment_content": "1111"
         },
