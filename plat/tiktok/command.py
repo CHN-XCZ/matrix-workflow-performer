@@ -6,6 +6,7 @@ import uiautomator2 as u2
 
 from plat.tiktok.intent import open_tiktok_user_home, open_tiktok_link, back_tiktok_home
 from plat.tiktok.common import TIKTOK_RESOURCE_ID_MAP, restart_tiktok
+from utils.clipboard import get_clipboard_text
 from utils.image import os_push_image
 from utils.str import extract_filename_from_url
 
@@ -28,8 +29,7 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
     if action_type == OperateEnums.POST:
         logger.info(f"Performing Concern...")
         # return open_new_post(device, img_url, title, content)
-        open_new_post(device.serial, img_url, content, title)
-        return True
+        return open_new_post(device.serial, img_url, content, title)
     elif action_type == OperateEnums.REPLY:
         logger.info(f"Performing Comment...{content}")
         return True
@@ -85,10 +85,15 @@ def open_new_post(device_serial, media_url,content_text,title=None):
             else:
                 logger.warning("[TIKTOK POST] post error: title area not found")
         d(resourceId='com.zhiliaoapp.musically:id/n_x').click_exists(timeout=10)
+        if d(resourceId='com.zhiliaoapp.musically:id/pbn').click_exists(timeout=20):
+            logger.info("[TIKTOK POST] Post Successfully")
+            d(resourceId='com.zhiliaoapp.musically:id/pb6',text='复制链接').click_exists(timeout=10)
+            post_link = get_clipboard_text(d)
+            return post_link
+
         # d(resourceId='com.zhiliaoapp.musically:id/na0').click_exists(timeout=10)
-        return True
-    else:
-        return False
+    logger.info("[TIKTOK POST] Post Failed")
+    raise Exception("[TIKTOK POST] Post Failed")
 
 
 

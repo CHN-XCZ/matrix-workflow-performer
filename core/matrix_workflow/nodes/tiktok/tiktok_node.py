@@ -19,8 +19,8 @@ class TikTokNode(BaseNode):
             task_json = self.init_task_json()
             if not task_json:
                 raise Exception("[TikTokNode] run failed: Task json not found!")
+            result = start_script_by_type(self.device_id, self.operate, task_json, soft_type=6)
             if self.operate == OperateEnums.COLLECT.value:
-                result = start_script_by_type(self.device_id, self.operate, task_json, soft_type=6)
                 if len(result) > 0:
                     collect_result = {}
                     collect_result["gather_result"] = result
@@ -28,9 +28,13 @@ class TikTokNode(BaseNode):
                     self.result.outputs = collect_result
                 else:
                     self.result.status = False
+            elif self.operate == OperateEnums.POST.value and result:
+                post_result = {}
+                post_result["post_url"] = result
+                self.result.status = True
+                self.result.outputs = post_result
             else:
-                status = start_script_by_type(self.device_id, self.operate, task_json, soft_type=6)
-                self.result.status = status
+                self.result.status = result
             return self.result
         except Exception as e:
             logger.error("[TikTokNode] run error: {}", e)

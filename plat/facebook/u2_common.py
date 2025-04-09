@@ -3,6 +3,7 @@ import time
 import uiautomator2 as u2
 from loguru import logger
 
+from enums.xhs_enums import OperateEnums
 from plat.facebook.util.common import open_link, restart_app
 from plat.facebook.util.element_common import click_by_Xpath, get_text_by_className, \
     check_element_exists_by_Xpath, paste_text_by_className
@@ -115,6 +116,40 @@ def shear_post(device, post_link, content):
     except Exception as e:
         logger.error(f"[FaceBook]: shear post failed, {post_link}, {e}")
         return False
+
+def operate_facebook_link(device, tweet_url, img_url, title=None, action_type=None, content=None):
+    """
+    打开指定的推文链接，并执行相应的操作（转发、评论、点赞）。
+
+    参数:
+    tweet_url (str): 推文的链接（例如 "https://x.com/elonmusk/status/1856530955709587762"）
+    action_type (int): 操作类型：
+        1 - 转发
+        2 - 关注
+        3 - 评论
+        4 - 点赞
+    """
+    # time.sleep(3)
+    # 根据操作类型执行不同的动作
+    if action_type == OperateEnums.POST:
+        logger.info(f"Performing Concern...")
+        return post_photo(device, img_url, content)
+    elif action_type == OperateEnums.REPLY:
+        logger.info(f"Performing Comment...{content}")
+        return comment_post(device, tweet_url, content)
+    elif action_type == OperateEnums.LIKE:
+        logger.info("Performing Like...")
+        return like_post(device, tweet_url)
+    elif action_type == OperateEnums.FOLLOW:
+        logger.info("Performing Follow...")
+        return follow_user(device, tweet_url)
+    elif action_type == OperateEnums.COLLECT:
+        logger.info("Performing COLLECT...")
+        # restart_xhs(device)
+        return True
+    else:
+        logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
+        raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
 if __name__ == '__main__':
     d = u2.connect()
     # comment_post(d, "https://www.facebook.com/share/18kt7uggvH/", "hhhhh")

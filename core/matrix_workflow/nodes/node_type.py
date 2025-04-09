@@ -7,3 +7,4 @@ class NodeType(str, Enum):
     XHS = 'xhs'
     FACEBOOK = 'facebook'
     TIKTOK = 'tiktok'
+    CODE = 'code'
