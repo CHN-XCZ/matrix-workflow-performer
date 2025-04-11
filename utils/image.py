@@ -1,4 +1,6 @@
 import io
+import subprocess
+
 import requests
 import uiautomator2
 from loguru import logger
@@ -38,6 +40,23 @@ def os_push_image(device, url, file_path):
             return False
     except Exception as e:
         logger.exception(f"处理设备 {device.serial} 时发生错误: {e}")
+
+# 清除保存的文件
+def clear_gallery(serial, file_path = "*.jpg"):
+    # 相册文件通常存储在 /sdcard/DCIM/Camera/ 目录下
+    gallery_path = "/sdcard/DCIM/Camera/"+file_path
+
+    # 构造 adb shell 命令来删除相册中的文件
+    command = f"adb -s {serial} shell rm -r {gallery_path}"
+
+    # 执行命令
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+    # 检查命令执行结果
+    if result.returncode == 0:
+        logger.info(f"设备：{serial}:相册已清空")
+    else:
+        logger.warning(f"设备：{serial} 清空相册失败: {result.stderr}")
 
 def select_image_in_gallery(device):
     """

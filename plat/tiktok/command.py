@@ -7,7 +7,7 @@ import uiautomator2 as u2
 from plat.tiktok.intent import open_tiktok_user_home, open_tiktok_link, back_tiktok_home
 from plat.tiktok.common import TIKTOK_RESOURCE_ID_MAP, restart_tiktok
 from utils.clipboard import get_clipboard_text
-from utils.image import os_push_image
+from utils.image import os_push_image, clear_gallery
 from utils.str import extract_filename_from_url
 
 
@@ -25,7 +25,7 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
     """
     # time.sleep(3)
     # 根据操作类型执行不同的动作
-    
+    restart_tiktok(d)
     if action_type == OperateEnums.POST:
         logger.info(f"Performing Concern...")
         # return open_new_post(device, img_url, title, content)
@@ -52,44 +52,54 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
 
 def open_new_post(device_serial, media_url,content_text,title=None):
     d = u2.connect(device_serial)
-    restart_tiktok(d)
     in_home = back_tiktok_home(device=d, timeout=20)
+    file_path = extract_filename_from_url(media_url)
+    try:
+        if in_home:
+            post_button = d(resourceId=TIKTOK_RESOURCE_ID_MAP["home_post_button"])
+            gallery_button = d(resourceId="com.zhiliaoapp.musically:id/fnu")
 
-    if in_home:
-        post_button = d(resourceId=TIKTOK_RESOURCE_ID_MAP["home_post_button"])
-        gallery_button = d(resourceId="com.zhiliaoapp.musically:id/fnu")
+            post_button.click_exists(timeout=10)
 
-        post_button.click_exists(timeout=10)
+            # TODO 根据media_url下载资源
+            os_push_image(d,media_url,file_path)
 
-        # TODO 根据media_url下载资源
-        file_path = extract_filename_from_url(media_url)
-        os_push_image(d,media_url,file_path)
+            gallery_button.click_exists(timeout=10)
+            medias = d(resourceId='com.zhiliaoapp.musically:id/fnv')[0]
+            medias.click_exists(timeout=10)
 
-        gallery_button.click_exists(timeout=10)
-        medias = d(resourceId='com.zhiliaoapp.musically:id/fnv')[0]
-        medias.click_exists(timeout=10)
-
-        # 点击下一步
-        d(resourceId='com.zhiliaoapp.musically:id/qs4').click_exists(timeout=10)
-        d(resourceId='com.zhiliaoapp.musically:id/l1k').click_exists(timeout=10)
-        text_area = d(resourceId='com.zhiliaoapp.musically:id/en9')
-        if text_area.wait(10):
-            text_area.send_keys(content_text)
-        else:
-            logger.error("[TIKTOK POST] post error: content area not found")
-            raise Exception("[TIKTOK POST] post error: content area not found")
-        if title:
-            title_area = d(resourceId='com.zhiliaoapp.musically:id/en_')
-            if title_area.wait(10):
-                title_area.send_keys(title)
+            # 点击下一步
+            d(resourceId='com.zhiliaoapp.musically:id/qs4').click_exists(timeout=10)
+            d(resourceId='com.zhiliaoapp.musically:id/l1k').click_exists(timeout=10)
+            text_area = d(resourceId='com.zhiliaoapp.musically:id/en9')
+            if text_area.wait(10):
+                text_area.send_keys(content_text)
             else:
-                logger.warning("[TIKTOK POST] post error: title area not found")
-        d(resourceId='com.zhiliaoapp.musically:id/n_x').click_exists(timeout=10)
-        if d(resourceId='com.zhiliaoapp.musically:id/pbn').click_exists(timeout=20):
-            logger.info("[TIKTOK POST] Post Successfully")
-            d(resourceId='com.zhiliaoapp.musically:id/pb6',text='复制链接').click_exists(timeout=10)
-            post_link = get_clipboard_text(d)
-            return post_link
+                logger.error("[TIKTOK POST] post error: content area not found")
+                raise Exception("[TIKTOK POST] post error: content area not found")
+            if title:
+                title_area = d(resourceId='com.zhiliaoapp.musically:id/en_')
+                if title_area.wait(10):
+                    title_area.send_keys(title)
+                else:
+                    logger.warning("[TIKTOK POST] post error: title area not found")
+            d(resourceId='com.zhiliaoapp.musically:id/n_x').click_exists(timeout=10)
+            try:
+                if d(resourceId='com.zhiliaoapp.musically:id/pbn').click_exists(timeout=20):
+                    logger.info("[TIKTOK POST] Post Successfully")
+                    d(resourceId='com.zhiliaoapp.musically:id/pb6',text='复制链接').click_exists(timeout=10)
+                    post_link = get_clipboard_text(d)
+                    return post_link
+                else:
+                    return ""
+            except Exception as e:
+                logger.error("[TIKTOK POST] Post Failed: {}".format(e))
+                return ""
+    except Exception as e:
+        logger.error("[TIKTOK POST] Post Failed: {}".format(e))
+        raise e
+    finally:
+        clear_gallery(device_serial,file_path = file_path)
 
         # d(resourceId='com.zhiliaoapp.musically:id/na0').click_exists(timeout=10)
     logger.info("[TIKTOK POST] Post Failed")
