@@ -98,8 +98,8 @@ def open_new_post(device_serial, media_url,content_text,title=None):
     except Exception as e:
         logger.error("[TIKTOK POST] Post Failed: {}".format(e))
         raise e
-    finally:
-        clear_gallery(device_serial,file_path = file_path)
+    # finally:
+    #     clear_gallery(device_serial, file_path="*")
 
         # d(resourceId='com.zhiliaoapp.musically:id/na0').click_exists(timeout=10)
     logger.info("[TIKTOK POST] Post Failed")
