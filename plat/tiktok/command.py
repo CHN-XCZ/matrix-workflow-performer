@@ -10,7 +10,8 @@ import uiautomator2 as u2
 from plat.tiktok.intent import open_tiktok_user_home, open_tiktok_link, back_tiktok_home
 from plat.tiktok.common import TIKTOK_RESOURCE_ID_MAP, restart_tiktok
 from utils.clipboard import get_clipboard_text
-from utils.image import os_push_image, clear_gallery
+from utils.common import go_back, swipe_screen
+from utils.image import os_push_image, clear_gallery, export_all_gallery_to_computer
 from utils.str import extract_filename_from_url
 
 
@@ -47,7 +48,7 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
         return True
     elif action_type == OperateEnums.COLLECT:
         logger.info("Performing COLLECT...")
-        return True
+        return collect_articles(device)
     else:
         logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
         raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
@@ -105,10 +106,55 @@ def open_new_post(device_serial, media_url,content_text,title=None):
     # finally:
     #     clear_gallery(device_serial, file_path="*")
 
-        # d(resourceId='com.zhiliaoapp.musically:id/na0').click_exists(timeout=10)
-    logger.info("[TIKTOK POST] Post Failed")
-    raise Exception("[TIKTOK POST] Post Failed")
+def collect_articles(device):
+    try:
+        logger.info(f"设备：{d.serial}: 开始采集文章")
+        articles = []
 
+        for i in range(5):
+            article = get_article(device)
+            swipe_screen(device, direction="up", duration=0.1)
+            articles.append(article)
+    except Exception as e:
+        logger.error(f"设备：{d.serial}: 采集文章失败: {e}")
+        raise e
+
+
+
+
+def get_article(device):
+    clear_gallery(device.serial, file_path="*")
+    article = {}
+    user = device(resourceId="com.zhiliaoapp.musically:id/title")
+    open_content = device(resourceId="com.zhiliaoapp.musically:id/tet", text="展开")
+    content = device(resourceId="com.zhiliaoapp.musically:id/desc")
+    if user.wait(1):
+        article['username'] = user.get_text()
+    else:
+        logger.error("[TIKTOK COLLECT] collect error: user not found")
+    open_content.click_exists(timeout=1)
+    if content.wait(1):
+        article['content'] = content.get_text()
+    else:
+        logger.error("[TIKTOK COLLECT] collect error: content not found")
+
+    share_button = device(resourceId="com.zhiliaoapp.musically:id/pbn")
+    if share_button.click_exists(timeout=3):
+        d(resourceId='com.zhiliaoapp.musically:id/pb6',text='复制链接').click_exists(timeout=5)
+        time.sleep(2)
+        article['post_link'] = get_clipboard_text(d)
+    if share_button.click_exists(timeout=3):
+        if d(resourceId='com.zhiliaoapp.musically:id/pas',text='保存视频').click_exists(timeout=3):
+            d(className='android.widget.Button',text='下载').click_exists(timeout=3)
+            if d(resourceId='com.zhiliaoapp.musically:id/pfv').wait(30):
+                video_path = os.path.join(device.serial, article["username"]+str(time.time_ns()))
+                export_all_gallery_to_computer(device.serial,video_path)
+                time.sleep(1)
+        else:
+            logger.warning("[TIKTOK COLLECT] collect error: save video button not found")
+        go_back(device)
+    logger.info(f"[TIKTOK COLLECT] collect article: {article}")
+    return article
 
 
 

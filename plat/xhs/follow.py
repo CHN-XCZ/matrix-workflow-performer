@@ -6,10 +6,9 @@ import time
 from loguru import logger
 
 from enums.xhs_enums import OperateEnums
-from plat.device.adb_device import get_adb_path
 from utils.click import click_resource_timeout_button
 from utils.clipboard import get_clipboard_text
-from utils.image import os_push_image, select_image_in_gallery
+from utils.image import os_push_image, select_image_in_gallery, export_gallery_to_computer
 from utils.str import extract_filename_from_url
 from plat.xhs.common import restart_xhs, is_element_within_bounds, get_element_bounds
 from plat.xhs.intent import open_xhs_link, open_xhs_user_home
@@ -539,25 +538,6 @@ def clear_gallery(serial):
         logger.info(f"设备：{serial}:相册已清空")
     else:
         logger.warning(f"设备：{serial} 清空相册失败: {result.stderr}")
-
-
-# device_gallery_path = "/sdcard/DCIM/*.jpg"  local_directory = D:\work\groupc\xhsv2\image
-def export_gallery_to_computer(image_path, serial, device_gallery_path = "/sdcard/DCIM/"):
-    local_path = os.path.join(os.getcwd(), "collect", "images", image_path.lstrip("\\/"))
-    adb_path = get_adb_path()
-    if not os.path.exists(local_path):
-        os.makedirs(local_path)
-    command = f"{adb_path} -s {serial} shell ls {device_gallery_path}"
-    files = subprocess.run(command, capture_output=True,
-                           text=True).stdout.splitlines()
-    jpg_files = [f for f in files if f.endswith('.jpg')]
-
-    # 导出每个 jpg 文件
-    for jpg_file in jpg_files:
-        full_device_path = f"{device_gallery_path}{jpg_file}"
-        full_local_path = os.path.join(local_path, jpg_file)
-        save_command = f"{adb_path} -s {serial} pull {full_device_path} {full_local_path}"
-        subprocess.run(save_command)
 
 #
 # if __name__ == '__main__':

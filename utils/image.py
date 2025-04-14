@@ -1,4 +1,5 @@
 import io
+import os
 import subprocess
 
 import requests
@@ -6,6 +7,7 @@ import uiautomator2
 from loguru import logger
 import time
 
+from plat.device.adb_device import get_adb_path
 from utils.str import extract_filename_from_url
 
 
@@ -77,6 +79,41 @@ def select_image_in_gallery(device):
             logger.warning("未找到图片")
     else:
         logger.warning("未打开相册")
+
+# device_gallery_path = "/sdcard/DCIM/*.jpg"  local_directory = D:\work\groupc\xhsv2\image
+def export_gallery_to_computer(image_path, serial, device_gallery_path = "/sdcard/DCIM/"):
+    local_path = os.path.join(os.getcwd(), "collect", "images", image_path.lstrip("\\/"))
+    adb_path = get_adb_path()
+    if not os.path.exists(local_path):
+        os.makedirs(local_path)
+    command = f"{adb_path} -s {serial} shell ls {device_gallery_path}"
+    files = subprocess.run(command, capture_output=True,
+                           text=True).stdout.splitlines()
+    jpg_files = [f for f in files if f.endswith('.jpg')]
+
+    # 导出每个 jpg 文件
+    for jpg_file in jpg_files:
+        full_device_path = f"{device_gallery_path}{jpg_file}"
+        full_local_path = os.path.join(local_path, jpg_file)
+        save_command = f"{adb_path} -s {serial} pull {full_device_path} {full_local_path}"
+        subprocess.run(save_command)
+
+def export_all_gallery_to_computer(serial, video_path, device_gallery_path = "/sdcard/DCIM/Camera/"):
+    local_path = os.path.join(os.getcwd(), "collect", "video", video_path.lstrip("\\/"))
+    if not os.path.exists(local_path):
+        os.makedirs(local_path)
+    command = f"adb -s {serial} shell ls {device_gallery_path}"
+    files = subprocess.run(command, capture_output=True,
+                           text=True).stdout.splitlines()
+    if len(files) == 0:
+        logger.warning(f"[设备] {serial}：未找到需要保存的文件，路径：{device_gallery_path}")
+        return
+    adb_path = get_adb_path()
+    for jpg_file in files:
+        full_device_path = f"{device_gallery_path}{jpg_file}"
+        full_local_path = os.path.join(local_path, jpg_file)
+        save_command = f"{adb_path} -s {serial} pull {full_device_path} {full_local_path}"
+        subprocess.run(save_command)
 
 if __name__ == '__main__':
     d = uiautomator2.connect()
