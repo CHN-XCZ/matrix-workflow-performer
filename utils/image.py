@@ -45,9 +45,9 @@ def os_push_image(device, url, file_path):
 def clear_gallery(serial, file_path = "*.jpg"):
     # 相册文件通常存储在 /sdcard/DCIM/Camera/ 目录下
     gallery_path = "/sdcard/DCIM/Camera/"+file_path
-
+    adb_path = get_adb_path()
     # 构造 adb shell 命令来删除相册中的文件
-    command = f"adb -s {serial} shell rm -r {gallery_path}"
+    command = f"{adb_path} -s {serial} shell rm -r {gallery_path}"
 
     # 执行命令
     result = subprocess.run(command, shell=True, capture_output=True, text=True)

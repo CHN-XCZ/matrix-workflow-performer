@@ -1,3 +1,6 @@
+import os
+import time
+
 import uiautomator2
 
 from enums.tiktok_enums import OperateEnums
@@ -87,11 +90,11 @@ def open_new_post(device_serial, media_url,content_text,title=None):
             d(resourceId='com.zhiliaoapp.musically:id/n_x').click_exists(timeout=10)
             try:
                 if d(resourceId='com.zhiliaoapp.musically:id/oa6').wait(timeout=20):
-                    if d(resourceId='com.zhiliaoapp.musically:id/pbn').click_exists(timeout=20):
-                        logger.info("[TIKTOK POST] Post Successfully")
-                        d(resourceId='com.zhiliaoapp.musically:id/pb6',text='复制链接').click_exists(timeout=10)
-                        post_link = get_clipboard_text(d)
-                        return post_link
+                    logger.info("[TIKTOK POST] Post Successfully")
+                    d(resourceId='com.zhiliaoapp.musically:id/pb6',text='Copy link').click_exists(timeout=10)
+                    time.sleep(2)
+                    post_link = get_clipboard_text(d)
+                    return post_link
                 raise Exception("[TIKTOK POST] Post Failed")
             except Exception as e:
                 logger.error("[TIKTOK POST] Post Failed: {}".format(e))

@@ -6,6 +6,7 @@ import time
 from loguru import logger
 
 from enums.xhs_enums import OperateEnums
+from plat.device.adb_device import get_adb_path
 from utils.click import click_resource_timeout_button
 from utils.clipboard import get_clipboard_text
 from utils.image import os_push_image, select_image_in_gallery
@@ -542,20 +543,11 @@ def clear_gallery(serial):
 
 # device_gallery_path = "/sdcard/DCIM/*.jpg"  local_directory = D:\work\groupc\xhsv2\image
 def export_gallery_to_computer(image_path, serial, device_gallery_path = "/sdcard/DCIM/"):
-    # current_file_path = os.path.abspath(__file__)
-    # # 向上三层目录
-    # parent_dir = os.path.dirname(current_file_path)
-    # grandparent_dir = os.path.dirname(parent_dir)
-    # great_grandparent_dir = os.path.dirname(grandparent_dir)
-
-    # local_path = great_grandparent_dir + "\\collect\\images" + image_path
     local_path = os.path.join(os.getcwd(), "collect", "images", image_path.lstrip("\\/"))
-    # local_path ="../../collect/images" + image_path
-    # logger.info(f"导出图片到本地：{local_path}")
-
+    adb_path = get_adb_path()
     if not os.path.exists(local_path):
         os.makedirs(local_path)
-    command = f"adb -s {serial} shell ls {device_gallery_path}"
+    command = f"{adb_path} -s {serial} shell ls {device_gallery_path}"
     files = subprocess.run(command, capture_output=True,
                            text=True).stdout.splitlines()
     jpg_files = [f for f in files if f.endswith('.jpg')]
@@ -564,7 +556,7 @@ def export_gallery_to_computer(image_path, serial, device_gallery_path = "/sdcar
     for jpg_file in jpg_files:
         full_device_path = f"{device_gallery_path}{jpg_file}"
         full_local_path = os.path.join(local_path, jpg_file)
-        save_command = f"adb -s {serial} pull {full_device_path} {full_local_path}"
+        save_command = f"{adb_path} -s {serial} pull {full_device_path} {full_local_path}"
         subprocess.run(save_command)
 
 #
