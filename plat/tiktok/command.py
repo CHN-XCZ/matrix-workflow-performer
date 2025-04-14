@@ -25,7 +25,7 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
     """
     # time.sleep(3)
     # 根据操作类型执行不同的动作
-    restart_tiktok(d)
+    restart_tiktok(device)
     if action_type == OperateEnums.POST:
         logger.info(f"Performing Concern...")
         # return open_new_post(device, img_url, title, content)
@@ -51,6 +51,7 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
     
 
 def open_new_post(device_serial, media_url,content_text,title=None):
+    clear_gallery(device_serial, file_path="*")
     d = u2.connect(device_serial)
     in_home = back_tiktok_home(device=d, timeout=20)
     file_path = extract_filename_from_url(media_url)
@@ -85,13 +86,13 @@ def open_new_post(device_serial, media_url,content_text,title=None):
                     logger.warning("[TIKTOK POST] post error: title area not found")
             d(resourceId='com.zhiliaoapp.musically:id/n_x').click_exists(timeout=10)
             try:
-                if d(resourceId='com.zhiliaoapp.musically:id/pbn').click_exists(timeout=20):
-                    logger.info("[TIKTOK POST] Post Successfully")
-                    d(resourceId='com.zhiliaoapp.musically:id/pb6',text='复制链接').click_exists(timeout=10)
-                    post_link = get_clipboard_text(d)
-                    return post_link
-                else:
-                    return ""
+                if d(resourceId='com.zhiliaoapp.musically:id/oa6').wait(timeout=20):
+                    if d(resourceId='com.zhiliaoapp.musically:id/pbn').click_exists(timeout=20):
+                        logger.info("[TIKTOK POST] Post Successfully")
+                        d(resourceId='com.zhiliaoapp.musically:id/pb6',text='复制链接').click_exists(timeout=10)
+                        post_link = get_clipboard_text(d)
+                        return post_link
+                raise Exception("[TIKTOK POST] Post Failed")
             except Exception as e:
                 logger.error("[TIKTOK POST] Post Failed: {}".format(e))
                 return ""

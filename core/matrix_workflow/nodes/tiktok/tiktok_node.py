@@ -28,7 +28,7 @@ class TikTokNode(BaseNode):
                     self.result.outputs = collect_result
                 else:
                     self.result.status = False
-            elif self.operate == OperateEnums.POST.value and result:
+            elif self.operate == OperateEnums.POST.value:
                 post_result = {}
                 post_result["post_url"] = result
                 self.result.status = True
