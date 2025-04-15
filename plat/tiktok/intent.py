@@ -23,10 +23,11 @@ def open_tiktok_user_home(device, user_id):
     d.shell(f'am start -a android.intent.action.VIEW -d "snssdk1233://user/profile/{user_id}"')
 
 def open_tiktok_link(url, device):
-    content_id = get_content_id(url)
+    # content_id = get_content_id(url)
     d = u2.connect(device)
     # d.app_start("com.xingin.xhs")
-    d.shell(f'am start -a android.intent.action.VIEW -d "snssdk1233://aweme/detail/{content_id}"')
+    d.shell(f'am start -a android.intent.action.VIEW -d "snssdk1233://webview?url={url}"')
+    # d.shell(f'am start -a android.intent.action.VIEW -d "snssdk1233://aweme/detail/{content_id}"')
 
 def back_tiktok_home(device:Device, timeout:int=0) -> bool:
     # start_time = time.time()
@@ -37,3 +38,6 @@ def back_tiktok_home(device:Device, timeout:int=0) -> bool:
     return post_button.wait(timeout=timeout)
     # while time.time() - start_time < timeout:
 
+if __name__ == '__main__':
+    device = u2.connect()
+    open_tiktok_link("https://www.tiktok.com/@_ix_u?_t=ZS-8vXgP2Sr97a&_r=1",device.serial)

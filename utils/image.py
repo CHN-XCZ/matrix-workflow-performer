@@ -117,5 +117,6 @@ def export_all_gallery_to_computer(serial, video_path, device_gallery_path = "/s
 
 if __name__ == '__main__':
     d = uiautomator2.connect()
-    file_path = extract_filename_from_url('https://pica.zhimg.com/v2-93a9c0544f7157ddd0b7ef52bcad358d_xl.jpg?source=32738c0c&needBackground=1')
-    os_push_image(d,"https://pica.zhimg.com/v2-93a9c0544f7157ddd0b7ef52bcad358d_xl.jpg?source=32738c0c&needBackground=1",file_path)
+    # file_path = extract_filename_from_url('https://pica.zhimg.com/v2-93a9c0544f7157ddd0b7ef52bcad358d_xl.jpg?source=32738c0c&needBackground=1')
+    # os_push_image(d,"https://pica.zhimg.com/v2-93a9c0544f7157ddd0b7ef52bcad358d_xl.jpg?source=32738c0c&needBackground=1",file_path)
+    export_all_gallery_to_computer(d.serial, "1111")
