@@ -183,57 +183,60 @@ def follow_user_intent(device, userLink):
         else:
             logger.error(f"[TIKTOK FOLLOW] 设备：{d.serial}: 无法打开用户主页")
             raise Exception("[TIKTOK FOLLOW] follow error: cannot open user home")
-        # else:
-        #     logger.error(f"[TIKTOK FOLLOW] 设备：{d.serial}: 关注用户失败")
-        #     raise Exception("[TIKTOK FOLLOW] follow error: follow failed")
     except Exception as e:
         logger.error(f"[TIKTOK FOLLOW] 设备：{d.serial}: 关注用户失败: {e}")
         raise e
 
 def follow_user(device, userLink):
-    logger.info(f"设备：{d.serial}: 开始关注用户")
-    if device(resourceId="com.zhiliaoapp.musically:id/gwd")[1].click_exists(timeout=10):
-        text_area = device(resourceId='com.zhiliaoapp.musically:id/f21')
-        if text_area.wait(timeout=2):
-            text_area.send_keys(userLink)
-            device(resourceId='com.zhiliaoapp.musically:id/t95').click_exists(timeout=5)
-            follow_username_area = ""
-            username_area = device(resourceId='com.zhiliaoapp.musically:id/shj')
-            if len(username_area) > 1:
-                follow_username_area = username_area[0]
-            else:
-                follow_username_area = username_area
-            if follow_username_area.wait(timeout=10):
-                username = follow_username_area.get_text()
-                followed_area = ""
-                followed_areas = device(resourceId='com.zhiliaoapp.musically:id/ntb', text='已关注')
-                if len(followed_areas) > 1:
-                    followed_area = followed_areas[0]
+    try:
+        logger.info(f"设备：{d.serial}: 开始关注用户")
+        if device(resourceId="com.zhiliaoapp.musically:id/gwd")[1].click_exists(timeout=10):
+            text_area = device(resourceId='com.zhiliaoapp.musically:id/f21')
+            if text_area.wait(timeout=2):
+                text_area.send_keys(userLink)
+                device(resourceId='com.zhiliaoapp.musically:id/t95').click_exists(timeout=5)
+                follow_username_area = ""
+                username_area = device(resourceId='com.zhiliaoapp.musically:id/shj')
+                if len(username_area) > 1:
+                    follow_username_area = username_area[0]
                 else:
-                    followed_area = followed_areas
-                if username in userLink and followed_area.wait(timeout=10):
-                    logger.info(f"设备：{d.serial}: 已关注用户")
-                    return True
-                follow_area = ""
-                follow_areas = device(resourceId='com.zhiliaoapp.musically:id/ntb', text='关注')
-                if len(follow_areas) > 1:
-                    follow_area = follow_areas[0]
+                    follow_username_area = username_area
+                if follow_username_area.wait(timeout=10):
+                    username = follow_username_area.get_text()
+                    followed_area = ""
+                    followed_areas = device(resourceId='com.zhiliaoapp.musically:id/ntb', text='已关注')
+                    if len(followed_areas) > 1:
+                        followed_area = followed_areas[0]
+                    else:
+                        followed_area = followed_areas
+                    if username in userLink and followed_area.wait(timeout=10):
+                        logger.info(f"设备：{d.serial}: 已关注用户")
+                        return True
+                    follow_area = ""
+                    follow_areas = device(resourceId='com.zhiliaoapp.musically:id/ntb', text='关注')
+                    if len(follow_areas) > 1:
+                        follow_area = follow_areas[0]
+                    else:
+                        follow_area = follow_areas
+                    if username in userLink and follow_area.click_exists(timeout=10):
+                        logger.info(f"设备：{d.serial}: 关注用户成功")
+                        return True
+                    else:
+                        logger.error(f"设备：{d.serial}: 关注用户失败")
+                        raise Exception("[TIKTOK FOLLOW] follow error: user not found")
                 else:
-                    follow_area = follow_areas
-                if username in userLink and follow_area.click_exists(timeout=10):
-                    logger.info(f"设备：{d.serial}: 关注用户成功")
-                    return True
-                else:
-                    logger.error(f"设备：{d.serial}: 关注用户失败")
                     raise Exception("[TIKTOK FOLLOW] follow error: user not found")
             else:
-                raise Exception("[TIKTOK FOLLOW] follow error: user not found")
+                logger.error("[TIKTOK FOLLOW] follow error: text area not found")
+                raise Exception("[TIKTOK FOLLOW] follow error: text area not found")
         else:
-            logger.error("[TIKTOK FOLLOW] follow error: text area not found")
-            raise Exception("[TIKTOK FOLLOW] follow error: text area not found")
-    else:
-        logger.error("[TIKTOK FOLLOW] follow error: search button not found")
-        raise Exception("[TIKTOK FOLLOW] follow error: search button not found")
+            logger.error("[TIKTOK FOLLOW] follow error: search button not found")
+            raise Exception("[TIKTOK FOLLOW] follow error: search button not found")
+    except Exception as e:
+        logger.error(f"[TIKTOK FOLLOW] 设备：{d.serial}: 关注用户失败: {e}")
+        raise e
+    finally:
+        back_tiktok_home(device)
 
 def like_post(device, post_link):
     try:
@@ -265,6 +268,7 @@ def reply_post(device, post_link, content):
                 text_area.send_keys(content)
                 if device(resourceId='com.zhiliaoapp.musically:id/cwc').click_exists(timeout=3) or device(resourceId='com.zhiliaoapp.musically:id/brd').click_exists(timeout=3):
                     logger.info(f"[TIKTOK REPLY] 设备：{d.serial}: 发布评论成功")
+                    return True
                 else:
                     logger.error(f"[TIKTOK REPLY] 设备：{d.serial}: 发布评论失败")
                     raise Exception("[TIKTOK REPLY] reply error: cannot click send button")
@@ -277,6 +281,8 @@ def reply_post(device, post_link, content):
     except Exception as e:
         logger.error(f"[TIKTOK REPLY] 设备：{d.serial}: 回复失败: {e}")
         raise e
+    finally:
+        back_tiktok_home(device)
 
 if __name__ == '__main__':
     d = uiautomator2.connect()
