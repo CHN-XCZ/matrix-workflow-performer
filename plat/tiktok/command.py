@@ -2,11 +2,10 @@ import os
 import time
 
 import uiautomator2
-
-from enums.tiktok_enums import OperateEnums
 from loguru import logger
 import uiautomator2 as u2
 
+from enums.operate_enums import OperateEnums
 from plat.tiktok.intent import back_tiktok_home, open_tiktok_link
 from plat.tiktok.common import TIKTOK_RESOURCE_ID_MAP, restart_tiktok
 from utils.clipboard import get_clipboard_text
@@ -291,7 +290,7 @@ def repost(device, tiktok_url):
     try:
         open_tiktok_link(tiktok_url,device.serial)
         time.sleep(5)
-        if device(resourceId="com.zhiliaoapp.musically:id/tft", text="You reposted").wait(timeout=3):
+        if device(resourceId="com.zhiliaoapp.musically:id/tft", text="You reposted").wait(timeout=10):
             logger.info(f"[TIKTOK REPOST] 设备：{device.serial}: 已经转发过了")
             return True
         if device(resourceId="com.zhiliaoapp.musically:id/pbn").click_exists(timeout=10):

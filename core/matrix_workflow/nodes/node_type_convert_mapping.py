@@ -10,6 +10,7 @@ node_type_convert_mapping:dict[str, str] = {
     "tiktok_like":"tiktok",
     "tiktok_follow":"tiktok",
     "tiktok_gather":"tiktok",
+    "tiktok_repost":"tiktok"
 }
 
 node_operate_convert_mapping:dict[str, int] = {
@@ -24,6 +25,6 @@ node_operate_convert_mapping:dict[str, int] = {
     "tiktok_like":2,
     "tiktok_follow":3,
     "tiktok_gather":4,
-
+    "tiktok_repost":5
 
 }

@@ -3,7 +3,7 @@ from loguru import logger
 from core.matrix_workflow.nodes.base.base_node import BaseNode
 from core.matrix_workflow.nodes.node_run_result import NodeRunResult
 from core.matrix_workflow.nodes.node_type import NodeType
-from enums.tiktok_enums import OperateEnums
+from enums.operate_enums import OperateEnums
 from plat.task_runner import start_script_by_type
 
 
@@ -72,6 +72,9 @@ class TikTokNode(BaseNode):
                     self.result.inputs[node_data["user_id"][1]]= task_json['user_id']
                 elif self.operate == OperateEnums.COLLECT.value:
                     task_json["collect"] = "collect"
+                elif self.operate == OperateEnums.REPOST.value:
+                    task_json['post_url'] = self.variable_pool.get(("run_outputs", node_data["post_id"][0],node_data["post_id"][1]))
+                    self.result.inputs[node_data["post_id"][1]]= task_json['post_url']
                 else:
                     logger.error("[TikTokNode] init_task_json error: operate not found")
             return task_json

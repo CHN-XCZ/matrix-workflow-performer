@@ -3,8 +3,7 @@ from threading import Lock
 
 import uiautomator2
 from loguru import logger
-from enums.xhs_enums import OperateEnums
-from enums.tiktok_enums import OperateEnums as TikTokOperateEnums
+from enums.operate_enums import OperateEnums
 from plat.xhs import follow as redNote
 from plat.device.adb_device import adb_connect_device
 from plat.facebook import u2_common as faceBook
@@ -48,6 +47,10 @@ def start_script_by_type(device_id, operate_cmd, task_json, soft_type=4):
             elif operation == OperateEnums.COLLECT:
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始采集操作")
                 is_success = start_link_reply_retweet(device_id, "",start_type=4, soft_type=soft_type)
+            elif operation == OperateEnums.REPOST:
+                logger.info(f"[主动任务] 设备ID: {device_id} 开始转发操作")
+                post_url = task_json['post_url']
+                is_success = start_link_reply_retweet(device_id, post_url, start_type=5, soft_type=soft_type)
             else:
                 raise Exception(f"[主动任务] 设备ID: {device_id} 不支持的操作:{operation}")
             return is_success
@@ -66,25 +69,25 @@ def start_link_reply_retweet(param_serial, param_link, title = None, img_url=Non
                  # 发布
                 (0, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
                 (0, 5): lambda: faceBook.operate_facebook_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
-                (0, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.POST, content=comment),
+                (0, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
                 # 评论
                 (1, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.REPLY, content=comment),
                 (1, 5): lambda: faceBook.operate_facebook_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
-                (1, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.REPLY, content=comment),
+                (1, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.REPLY, content=comment),
                 # 点赞
                 (2, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.LIKE, content=comment),
                 (2, 5): lambda: faceBook.operate_facebook_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
-                (2, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.LIKE, content=comment),
+                (2, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.LIKE, content=comment),
                 # 关注
                 (3, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.FOLLOW, content=comment),
                 (3, 5): lambda: faceBook.operate_facebook_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
-                (3, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.FOLLOW, content=comment),
+                (3, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.FOLLOW, content=comment),
                 # 采集
                 (4, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.COLLECT, content=comment),
                 # (4, 5): lambda: u2_common.operate_facebook_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
-                (4, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.COLLECT, content=comment),
+                (4, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.COLLECT, content=comment),
                 # 转发
-                (5, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.REPOST, content=comment)
+                (5, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.REPOST, content=comment)
             }
             return operations.get((start_type, soft_type), lambda: False)()
 

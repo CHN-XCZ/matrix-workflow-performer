@@ -4,7 +4,7 @@ from core.matrix_workflow.nodes.node_type import NodeType
 from core.matrix_workflow.nodes.node_type_class_mapping import node_type_class_mapping
 from core.matrix_workflow.nodes.node_type_convert_mapping import node_type_convert_mapping, node_operate_convert_mapping
 from core.matrix_workflow.workflow_runner.variables.variable_pool import VariablePool
-from enums.xhs_enums import OperateEnums
+from enums.operate_enums import OperateEnums
 
 
 class GraphEngine:

@@ -3,7 +3,7 @@ from loguru import logger
 from core.matrix_workflow.nodes.base.base_node import BaseNode
 from core.matrix_workflow.nodes.node_run_result import NodeRunResult
 from core.matrix_workflow.nodes.node_type import NodeType
-from enums.xhs_enums import OperateEnums
+from enums.operate_enums import OperateEnums
 from plat.task_runner import start_script_by_type
 
 

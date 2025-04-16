@@ -65,3 +65,7 @@ def extract_digits(phone_number):
     # 使用正则表达式提取数字
     digits_only = re.sub(r'\D', '', phone_number)
     return digits_only
+
+if __name__ == '__main__':
+    value = get_config("Authorization_KEY")
+    print(value)

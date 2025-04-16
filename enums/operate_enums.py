@@ -12,6 +12,7 @@ class OperateEnums(Enum):
     LIKE = auto()
     FOLLOW = auto()
     COLLECT = auto()
+    REPOST = auto()
 
     @classmethod
     def from_str(cls, value: int):

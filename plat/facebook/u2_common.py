@@ -3,7 +3,7 @@ import time
 import uiautomator2 as u2
 from loguru import logger
 
-from enums.xhs_enums import OperateEnums
+from enums.operate_enums import OperateEnums
 from plat.facebook.util.common import open_link, restart_app
 from plat.facebook.util.element_common import click_by_Xpath, get_text_by_className, \
     check_element_exists_by_Xpath, paste_text_by_className

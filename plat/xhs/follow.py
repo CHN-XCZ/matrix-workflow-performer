@@ -5,7 +5,7 @@ import time
 
 from loguru import logger
 
-from enums.xhs_enums import OperateEnums
+from enums.operate_enums import OperateEnums
 from utils.click import click_resource_timeout_button
 from utils.clipboard import get_clipboard_text
 from utils.image import os_push_image, select_image_in_gallery, export_gallery_to_computer
