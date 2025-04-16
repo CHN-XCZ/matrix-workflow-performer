@@ -69,8 +69,9 @@ class GraphEngine:
                     current_node_run_result.inputs = self.graph.input_variables
                     for key, value in self.graph.input_variables.items():
                         self.variable_pool.add(("run_outputs", current_node_id, key), value)
+                    self.variable_pool.add(("run_outputs",current_node_id, "device_serial"), current_node_instance.device_id)
 
-                # 将节点运行结果添加到变量池中
+                                           # 将节点运行结果添加到变量池中
                 self.variable_pool.add(("node_result", current_node_id), current_node_run_result)
 
                 # 将输出参数添加到变量池中

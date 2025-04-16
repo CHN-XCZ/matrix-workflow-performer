@@ -1,6 +1,10 @@
 import os
 import re
 from urllib.parse import urlparse
+
+from utils.system_config import get_config
+
+
 def is_prefix_matching(str1, str2, keyword="Received at"):
     # 找到 "Received at" 前面的部分
     prefix1 = str1.split(keyword)[0].strip()

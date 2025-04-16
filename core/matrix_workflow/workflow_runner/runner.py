@@ -9,6 +9,8 @@ from core.matrix_workflow.graph.graph import Graph
 from plat.device.adb_device import get_adb_path, get_connected_devices
 from loguru import logger
 
+from utils.system_config import get_config
+
 executor = ThreadPoolExecutor(max_workers=200)  # 设备线程池
 
 
@@ -52,19 +54,21 @@ class MatrixWorkflowRunner:
 
 
 def post_task():
-    post_task_url = "http://192.168.5.198:8000/api/matrix/task/b5a38e84-050c-4ec2-9b5d-8c4db4b9aa9e/generate"
+    post_task_url = "http://192.168.5.125:8000/api/matrix/task/b5a38e84-050c-4ec2-9b5d-8c4db4b9aa9e/generate"
     inputs = {
         "input_variables": {
-            "like_post_id": "64",
-            "follow_user_id": "57",
+            "like_post_id": "https://vt.tiktok.com/ZSrQnjG8b/",
+            "follow_user_id": "https://www.tiktok.com/@toki.akari?_t=ZS-8vZkEkrINPe&_r=1",
             "title": "111",
             "post_content": "111",
-            "post_video_url": "https://kbtoken.oss-cn-beijing.aliyuncs.com/idolphone/Group244830895.png",
-            "comment_post_id": "1111",
-            "comment_content": "1111"
+            "post_video_url": "https://redleaf-app.oss-cn-beijing.aliyuncs.com/idolphone/Videos.mp4",
+            "comment_post_id": "https://vt.tiktok.com/ZSrQnjG8b/",
+            "comment_content": "love you"
         },
-        "devices_list": ["631d73a0"]
+        "devices_list": ["bd08f05b"]
     }
-    response = requests.post(post_task_url, json=inputs)
+    authorization_key = get_config("Authorization_KEY")
+    headers = {'Authorization': authorization_key}
+    response = requests.post(post_task_url, headers=headers, json=inputs)
     if response.status_code == 201:
         logger.info('post task, request success')

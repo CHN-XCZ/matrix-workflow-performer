@@ -15,12 +15,12 @@ from utils.image import os_push_image, clear_gallery, export_all_gallery_to_comp
 from utils.str import extract_filename_from_url
 
 
-def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None, content=None):
+def operate_tiktok_link(device, tiktok_url, img_url, title=None, action_type=None, content=None):
     """
     打开指定的推文链接，并执行相应的操作（转发、评论、点赞）。
 
     参数:
-    tweet_url (str): 推文的链接（例如 "https://x.com/elonmusk/status/1856530955709587762"）
+    tiktok_url (str): 推文的链接（例如 "https://x.com/elonmusk/status/1856530955709587762"）
     action_type (int): 操作类型：
         1 - 转发
         2 - 关注
@@ -36,19 +36,22 @@ def operate_tiktok_link(device, tweet_url, img_url, title=None, action_type=None
         return open_new_post(device.serial, img_url, content, title)
     elif action_type == OperateEnums.REPLY:
         logger.info(f"Performing Comment...{content}")
-        return reply_post(device, tweet_url, content)
+        return reply_post(device, tiktok_url, content)
     elif action_type == OperateEnums.LIKE:
         logger.info("Performing Like...")
         # open_tiktok_link(tweet_url, device.serial)
-        return like_post(device, tweet_url)
+        return like_post(device, tiktok_url)
     elif action_type == OperateEnums.FOLLOW:
         logger.info("Performing Follow...")
         # open_tiktok_user_home(device.serial, tweet_url)
         # return follow_user(device,tweet_url)
-        return follow_user_intent(device, tweet_url)
+        return follow_user_intent(device, tiktok_url)
     elif action_type == OperateEnums.COLLECT:
         logger.info("Performing COLLECT...")
         return collect_articles(device)
+    elif action_type == OperateEnums.REPOST:
+        logger.info("Performing REPOST...")
+        return repost(device, tiktok_url)
     else:
         logger.warning(
             "Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
@@ -111,7 +114,7 @@ def open_new_post(device_serial, media_url, content_text, title=None):
 
 def collect_articles(device):
     try:
-        logger.info(f"设备：{d.serial}: 开始采集文章")
+        logger.info(f"设备：{device.serial}: 开始采集文章")
         articles = []
 
         for i in range(5):
@@ -119,7 +122,7 @@ def collect_articles(device):
             swipe_screen(device, direction="up", duration=0.1)
             articles.append(article)
     except Exception as e:
-        logger.error(f"设备：{d.serial}: 采集文章失败: {e}")
+        logger.error(f"设备：{device.serial}: 采集文章失败: {e}")
         raise e
 
 
@@ -143,14 +146,14 @@ def get_article(device):
     share_button = device(resourceId="com.zhiliaoapp.musically:id/pbn")
     if share_button.click_exists(timeout=3):
         # d(resourceId='com.zhiliaoapp.musically:id/pb6', text='复制链接').click_exists(timeout=5)
-        d(resourceId='com.zhiliaoapp.musically:id/pb6', text='Copy link').click_exists(timeout=5)
+        device(resourceId='com.zhiliaoapp.musically:id/pb6', text='Copy link').click_exists(timeout=5)
         time.sleep(2)
-        article['post_link'] = get_clipboard_text(d)
+        article['post_link'] = get_clipboard_text(device)
     if share_button.click_exists(timeout=3):
         # if d(resourceId='com.zhiliaoapp.musically:id/pas', text='保存视频').click_exists(timeout=3):
-        if d(resourceId='com.zhiliaoapp.musically:id/pas', text='Save video').click_exists(timeout=3):
-            d(className='android.widget.Button', text='下载').click_exists(timeout=3)
-            if d(resourceId='com.zhiliaoapp.musically:id/pfv').wait(30):
+        if device(resourceId='com.zhiliaoapp.musically:id/pas', text='Save video').click_exists(timeout=3):
+            device(className='android.widget.Button', text='下载').click_exists(timeout=3)
+            if device(resourceId='com.zhiliaoapp.musically:id/pfv').wait(30):
                 video_path = os.path.join(device.serial, article["username"] + str(time.time_ns()))
                 export_all_gallery_to_computer(device.serial, video_path)
                 time.sleep(1)
@@ -171,25 +174,25 @@ def follow_user_intent(device, userLink):
             # follow_areas = device(resourceId='com.zhiliaoapp.musically:id/dju', text=' 消息')
             follow_areas = device(resourceId='com.zhiliaoapp.musically:id/dju', text=' Message')
             if follow_areas.wait(timeout=5):
-                logger.info(f"[TIKTOK FOLLOW] 设备：{d.serial}: 已关注用户")
+                logger.info(f"[TIKTOK FOLLOW] 设备：{device.serial}: 已关注用户")
                 back_tiktok_home(device)
                 return True
             # follow_areas = device(resourceId='com.zhiliaoapp.musically:id/dju', text='关注')
             follow_areas = device(resourceId='com.zhiliaoapp.musically:id/dju', text='Follow')
             if follow_areas.click_exists(timeout=10):
-                logger.info(f"[TIKTOK FOLLOW] 设备：{d.serial}: 关注用户成功")
+                logger.info(f"[TIKTOK FOLLOW] 设备：{device.serial}: 关注用户成功")
                 back_tiktok_home(device)
                 return True
         else:
-            logger.error(f"[TIKTOK FOLLOW] 设备：{d.serial}: 无法打开用户主页")
+            logger.error(f"[TIKTOK FOLLOW] 设备：{device.serial}: 无法打开用户主页")
             raise Exception("[TIKTOK FOLLOW] follow error: cannot open user home")
     except Exception as e:
-        logger.error(f"[TIKTOK FOLLOW] 设备：{d.serial}: 关注用户失败: {e}")
+        logger.error(f"[TIKTOK FOLLOW] 设备：{device.serial}: 关注用户失败: {e}")
         raise e
 
 def follow_user(device, userLink):
     try:
-        logger.info(f"设备：{d.serial}: 开始关注用户")
+        logger.info(f"设备：{device.serial}: 开始关注用户")
         if device(resourceId="com.zhiliaoapp.musically:id/gwd")[1].click_exists(timeout=10):
             text_area = device(resourceId='com.zhiliaoapp.musically:id/f21')
             if text_area.wait(timeout=2):
@@ -210,7 +213,7 @@ def follow_user(device, userLink):
                     else:
                         followed_area = followed_areas
                     if username in userLink and followed_area.wait(timeout=10):
-                        logger.info(f"设备：{d.serial}: 已关注用户")
+                        logger.info(f"设备：{device.serial}: 已关注用户")
                         return True
                     follow_area = ""
                     follow_areas = device(resourceId='com.zhiliaoapp.musically:id/ntb', text='关注')
@@ -219,10 +222,10 @@ def follow_user(device, userLink):
                     else:
                         follow_area = follow_areas
                     if username in userLink and follow_area.click_exists(timeout=10):
-                        logger.info(f"设备：{d.serial}: 关注用户成功")
+                        logger.info(f"设备：{device.serial}: 关注用户成功")
                         return True
                     else:
-                        logger.error(f"设备：{d.serial}: 关注用户失败")
+                        logger.error(f"设备：{device.serial}: 关注用户失败")
                         raise Exception("[TIKTOK FOLLOW] follow error: user not found")
                 else:
                     raise Exception("[TIKTOK FOLLOW] follow error: user not found")
@@ -233,7 +236,7 @@ def follow_user(device, userLink):
             logger.error("[TIKTOK FOLLOW] follow error: search button not found")
             raise Exception("[TIKTOK FOLLOW] follow error: search button not found")
     except Exception as e:
-        logger.error(f"[TIKTOK FOLLOW] 设备：{d.serial}: 关注用户失败: {e}")
+        logger.error(f"[TIKTOK FOLLOW] 设备：{device.serial}: 关注用户失败: {e}")
         raise e
     finally:
         back_tiktok_home(device)
@@ -245,17 +248,17 @@ def like_post(device, post_link):
         like = device(resourceId="com.zhiliaoapp.musically:id/dzl")
         if like.wait(20):
             if like.info["selected"]:
-                logger.info(f"[TIKTOK LIKE] 设备：{d.serial}: 已点赞")
+                logger.info(f"[TIKTOK LIKE] 设备：{device.serial}: 已点赞")
                 return True
             else:
                 like.click_exists(timeout=10)
-                logger.info(f"[TIKTOK LIKE] 设备：{d.serial}: 点赞成功")
+                logger.info(f"[TIKTOK LIKE] 设备：{device.serial}: 点赞成功")
                 return True
         else:
-            logger.error(f"[TIKTOK LIKE] 设备：{d.serial}: 未找到点赞按钮")
+            logger.error(f"[TIKTOK LIKE] 设备：{device.serial}: 未找到点赞按钮")
             raise Exception("[TIKTOK LIKE] like error: like button not found")
     except Exception as e:
-        logger.error(f"[TIKTOK LIKE] 设备：{d.serial}: 点赞失败: {e}")
+        logger.error(f"[TIKTOK LIKE] 设备：{device.serial}: 点赞失败: {e}")
         raise e
 
 def reply_post(device, post_link, content):
@@ -267,10 +270,10 @@ def reply_post(device, post_link, content):
             if text_area.wait(timeout=5):
                 text_area.send_keys(content)
                 if device(resourceId='com.zhiliaoapp.musically:id/cwc').click_exists(timeout=3) or device(resourceId='com.zhiliaoapp.musically:id/brd').click_exists(timeout=3):
-                    logger.info(f"[TIKTOK REPLY] 设备：{d.serial}: 发布评论成功")
+                    logger.info(f"[TIKTOK REPLY] 设备：{device.serial}: 发布评论成功")
                     return True
                 else:
-                    logger.error(f"[TIKTOK REPLY] 设备：{d.serial}: 发布评论失败")
+                    logger.error(f"[TIKTOK REPLY] 设备：{device.serial}: 发布评论失败")
                     raise Exception("[TIKTOK REPLY] reply error: cannot click send button")
             else:
                 logger.error("[TIKTOK REPLY] reply error: text area not found")
@@ -279,18 +282,44 @@ def reply_post(device, post_link, content):
             logger.error("[TIKTOK REPLY] reply error: comment button not found")
             raise Exception("[TIKTOK REPLY] reply error: comment button not found")
     except Exception as e:
-        logger.error(f"[TIKTOK REPLY] 设备：{d.serial}: 回复失败: {e}")
+        logger.error(f"[TIKTOK REPLY] 设备：{device.serial}: 回复失败: {e}")
         raise e
     finally:
         back_tiktok_home(device)
 
-if __name__ == '__main__':
-    d = uiautomator2.connect()
-    restart_tiktok(d)
+def repost(device, tiktok_url):
+    try:
+        open_tiktok_link(tiktok_url,device.serial)
+        time.sleep(5)
+        if device(resourceId="com.zhiliaoapp.musically:id/tft", text="You reposted").wait(timeout=3):
+            logger.info(f"[TIKTOK REPOST] 设备：{device.serial}: 已经转发过了")
+            return True
+        if device(resourceId="com.zhiliaoapp.musically:id/pbn").click_exists(timeout=10):
+            if device(resourceId="com.zhiliaoapp.musically:id/pb6", text="Repost").click_exists(timeout=10):
+                if device(resourceId="com.zhiliaoapp.musically:id/tft", text="You reposted").wait(timeout=10):
+                    logger.info(f"[TIKTOK REPOST] 设备：{device.serial}: 转发成功")
+                    return True
+                else:
+                    logger.error(f"[TIKTOK REPOST] 设备：{device.serial}: 转发失败")
+                    raise Exception("[TIKTOK REPOST] repost error: cannot click repost button")
+            else:
+                logger.error(f"[TIKTOK REPOST] 设备：{device.serial}: 转发失败")
+                raise Exception("[TIKTOK REPOST] repost error: cannot click repost button")
+        else:
+            logger.error("[TIKTOK REPOST] repost error: share button not found")
+            raise Exception("[TIKTOK REPOST] repost error: share button not found")
+    except Exception as e:
+        logger.error(f"[TIKTOK REPOST] 设备：{device.serial}: 转发失败: {e}")
+        raise e
+
+# if __name__ == '__main__':
+    # d = uiautomator2.connect()
+    # restart_tiktok(d)
     # os.environ['NO_PROXY'] = '127.0.0.1'
     # open_new_post(d,"https://pica.zhimg.com/v2-93a9c0544f7157ddd0b7ef52bcad358d_xl.jpg?source=32738c0c&needBackground=1","111")
     # collect_articles(d)
     # follow_user(d, "https://www.tiktok.com/@konatsu_0805?_t=ZS-8vWZBzMA5gO&_r=1")
-    follow_user_intent(d, "https://www.tiktok.com/@_ix_u?_t=ZS-8vXgP2Sr97a&_r=1")
+    # follow_user_intent(d, "https://www.tiktok.com/@_ix_u?_t=ZS-8vXgP2Sr97a&_r=1")
     # like_post(d,"https://vt.tiktok.com/ZSrQnjG8b/")
     # reply_post(d,"https://vt.tiktok.com/ZSrQnjG8b/","123456")
+    # repost(d,"https://vt.tiktok.com/ZSrQnjG8b/")

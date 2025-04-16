@@ -10,6 +10,7 @@ from loguru import logger
 
 from core.matrix_workflow.workflow_runner.runner import MatrixWorkflowRunner, post_task
 from plat.device.adb_device import get_connected_devices, get_adb_path
+from utils.system_config import load_config, get_config
 
 task_executor = ThreadPoolExecutor(max_workers=10)  # 任务线程池
 
@@ -34,7 +35,9 @@ def scheduler_executor_heartbeat_queue():
     try:
         adb_path = get_adb_path()
         devices_list = get_connected_devices(adb_path)
-        response = requests.post(heartbeat_request_url,json={"devices_list": devices_list})
+        authorization_key = get_config("Authorization_KEY")
+        headers = {'Authorization': authorization_key}
+        response = requests.post(heartbeat_request_url, headers=headers, json={"devices_list": devices_list})
         if response.status_code != 200:
             # logger.error('scheduler, heartbeat request error， code != 200, response: {}'.format(response))
             return
@@ -72,7 +75,9 @@ def run_task():
                     key: result.to_dict()  # 对每个 DeviceRunResult 调用 to_dict()
                     for key, result in flow_run_result.items()
                 }
-                response = requests.post(report_request_url, json=report)
+                authorization_key = get_config("Authorization_KEY")
+                headers = {'Authorization': authorization_key}
+                response = requests.post(report_request_url, headers=headers, json=report)
                 if response.status_code!= 201:
                     logger.error('run task, report request error， code!= 201, response: {}'.format(response))
                 else:
@@ -94,8 +99,8 @@ if __name__ == '__main__':
         rotation='100 MB', retention='10 days', compression="zip",  # 最大10M, 保留10天, 压缩ZIP
         enqueue=True,  # 多进程安全, 防止阻塞
     )
-
     logger.info('程序初始化 ...')
+    load_config()
     init_scheduled_job()
     init_task_runner()
 

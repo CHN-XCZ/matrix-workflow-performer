@@ -7,11 +7,13 @@ class OperateEnums(Enum):
     # 2 点赞
     # 3 关注
     # 4 采集
+    # 5 转发
     POST = 0
     REPLY = auto()
     LIKE = auto()
     FOLLOW = auto()
     COLLECT = auto()
+    REPOST = auto()
 
     @classmethod
     def from_str(cls, value: int):

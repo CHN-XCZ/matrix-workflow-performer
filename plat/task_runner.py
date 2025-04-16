@@ -82,7 +82,9 @@ def start_link_reply_retweet(param_serial, param_link, title = None, img_url=Non
                 # 采集
                 (4, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.COLLECT, content=comment),
                 # (4, 5): lambda: u2_common.operate_facebook_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
-                (4, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.COLLECT, content=comment)
+                (4, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.COLLECT, content=comment),
+                # 转发
+                (5, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=TikTokOperateEnums.REPOST, content=comment)
             }
             return operations.get((start_type, soft_type), lambda: False)()
 
