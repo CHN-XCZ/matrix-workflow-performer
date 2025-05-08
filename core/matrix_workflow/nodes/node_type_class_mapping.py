@@ -12,7 +12,7 @@ node_type_class_mapping: dict[NodeType, type[BaseNode]] = {
     NodeType.START: StartNode,
     NodeType.END: EndNode,
     NodeType.IF_ELSE: IfElseNode,
-    NodeType.XHS: XhsNode,
+    NodeType.XHS: XhsNode, # XHS节点
     NodeType.FACEBOOK: FaceBookNode,
     NodeType.TIKTOK: TikTokNode
 }

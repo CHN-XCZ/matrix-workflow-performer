@@ -8,18 +8,18 @@ from plat.task_runner import start_script_by_type
 
 
 class XhsNode(BaseNode):
-    _node_type = NodeType.XHS
+    _node_type = NodeType.XHS # 节点类型
 
-    def _run(self) -> NodeRunResult:
+    def _run(self) -> NodeRunResult: #  运行节点
         try:
             # TODO 获取上级节点的输出结果
             # previous_node_outputs = self.variable_pool.get(("run_outputs", self.previous_node_id))
             # if not previous_node_outputs:
             #     raise Exception("[XhsNode] run failed: Previous node outputs not found!")
-            task_json = self.init_task_json()
+            task_json = self.init_task_json() # 初始化任务参数
             if not task_json:
                 raise Exception("[XhsNode] run failed: Task json not found!")
-            if self.operate == OperateEnums.COLLECT.value:
+            if self.operate == OperateEnums.COLLECT.value: # 采集
                 result = start_script_by_type(self.device_id, self.operate, task_json, soft_type=4)
                 if len(result) > 0:
                     collect_result = {}
@@ -37,11 +37,12 @@ class XhsNode(BaseNode):
             self.result.error = str(e)
             return self.result
 
+    #  初始化任务参数
     def init_task_json(self):
-        task_json = {}
+        task_json = {} # 任务参数
         try:
-            node_data = self.node_data
-            self.result.inputs = {}
+            node_data = self.node_data # 节点数据
+            self.result.inputs = {} # 输入参数
             if node_data:
                 if self.operate == OperateEnums.POST.value:
                     task_json['content'] = self.variable_pool.get(("run_outputs", node_data["content"][0],node_data["content"][1]))

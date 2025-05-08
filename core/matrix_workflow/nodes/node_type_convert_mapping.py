@@ -4,6 +4,7 @@ node_type_convert_mapping:dict[str, str] = {
     "rednote_like":"xhs",
     "rednote_follow":"xhs",
     "rednote_gather":"xhs",
+    "rednote_search":"xhs",
 
     "tiktok_post":"tiktok",
     "tiktok_comment":"tiktok",
@@ -19,6 +20,7 @@ node_operate_convert_mapping:dict[str, int] = {
     "rednote_like":2,
     "rednote_follow":3,
     "rednote_gather":4,
+    "rednote_search":5,
 
     "tiktok_post":0,
     "tiktok_comment":1,
@@ -26,5 +28,4 @@ node_operate_convert_mapping:dict[str, int] = {
     "tiktok_follow":3,
     "tiktok_gather":4,
     "tiktok_repost":5
-
 }

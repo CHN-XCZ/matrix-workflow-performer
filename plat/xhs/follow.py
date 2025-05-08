@@ -23,7 +23,7 @@ def collect_articles(d):
             for article_element in articles_button:
                 video_button = article_element.sibling(resourceId='com.xingin.xhs:id/e94')
                 if video_button.exists and is_element_within_bounds(video_button,
-                                                                    get_element_bounds(article_element)):
+                            get_element_bounds(article_element)):
                     return articles
                 if article_element.exists:
                     article_element.click()
@@ -233,25 +233,28 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
     """
     # time.sleep(3)
     # 根据操作类型执行不同的动作
-    if action_type == OperateEnums.POST:
+    if action_type == OperateEnums.POST: # 发布文章
         logger.info(f"Performing Concern...")
         return open_new_post(device, img_url, title, content)
-    elif action_type == OperateEnums.REPLY:
+    elif action_type == OperateEnums.REPLY: # 评论
         logger.info(f"Performing Comment...{content}")
         open_xhs_link(tweet_url, device.serial)
         return reply_post(device, content)
-    elif action_type == OperateEnums.LIKE:
+    elif action_type == OperateEnums.LIKE: # 点赞
         logger.info("Performing Like...")
         open_xhs_link(tweet_url, device.serial)
         return like_post(device)
-    elif action_type == OperateEnums.FOLLOW:
+    elif action_type == OperateEnums.FOLLOW: #  关注
         logger.info("Performing Follow...")
         open_xhs_user_home(device.serial, tweet_url)
         return concern_post(device)
-    elif action_type == OperateEnums.COLLECT:
+    elif action_type == OperateEnums.COLLECT: # 收藏
         logger.info("Performing COLLECT...")
         restart_xhs(device)
         return collect_articles(device)
+    elif action_type == OperateEnums.SEARCH:
+        search_keyword(device, tweet_url)
+        return search_follow(device, tweet_url)
     else:
         logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
         raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")

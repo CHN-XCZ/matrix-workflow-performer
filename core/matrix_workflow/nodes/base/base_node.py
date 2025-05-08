@@ -16,7 +16,7 @@ class BaseNode:
         self.previous_node_id = previous_node_id
         self.node_data = node_data
         self.device_id = device_id
-        self.operate = operate
+        self.operate = operate # 操作类型
         self.result = None
 
     @abstractmethod

@@ -12,10 +12,10 @@ from plat.tiktok import command as tiktok
 device_lock = defaultdict(Lock)
 
 def start_script_by_type(device_id, operate_cmd, task_json, soft_type=4):
-    with device_lock[device_id]:
-        device = uiautomator2.connect(device_id)
-        device_id = device.serial
-        operation = OperateEnums.from_str(operate_cmd)
+    with device_lock[device_id]: # 加锁 避免多线程问题
+        device = uiautomator2.connect(device_id) # 连接设备
+        device_id = device.serial # 获取设备ID
+        operation = OperateEnums.from_str(operate_cmd) #  获取操作枚举
         logger.info(f"[主动任务] 设备ID: {device_id} , 等待执行操作:{operation}")
         try:
             # 发送推文
@@ -47,10 +47,16 @@ def start_script_by_type(device_id, operate_cmd, task_json, soft_type=4):
             elif operation == OperateEnums.COLLECT:
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始采集操作")
                 is_success = start_link_reply_retweet(device_id, "",start_type=4, soft_type=soft_type)
+            #  转发
             elif operation == OperateEnums.REPOST:
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始转发操作")
                 post_url = task_json['post_url']
                 is_success = start_link_reply_retweet(device_id, post_url, start_type=5, soft_type=soft_type)
+            # 搜索
+            elif operation == OperateEnums.SEARCH:
+                logger.info(f"[主动任务] 设备ID: {device_id} 开始搜索操作")
+                search_text = task_json['search_text']
+                is_success = start_link_reply_retweet(device_id, search_text, start_type=6, soft_type=soft_type)
             else:
                 raise Exception(f"[主动任务] 设备ID: {device_id} 不支持的操作:{operation}")
             return is_success
@@ -87,7 +93,9 @@ def start_link_reply_retweet(param_serial, param_link, title = None, img_url=Non
                 # (4, 5): lambda: u2_common.operate_facebook_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.POST, content=comment),
                 (4, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.COLLECT, content=comment),
                 # 转发
-                (5, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.REPOST, content=comment)
+                (5, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.REPOST, content=comment),
+                # 搜索
+                (6, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.SEARCH, content=comment),
             }
             return operations.get((start_type, soft_type), lambda: False)()
 
