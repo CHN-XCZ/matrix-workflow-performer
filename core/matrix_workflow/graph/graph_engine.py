@@ -6,7 +6,7 @@ from core.matrix_workflow.nodes.node_type_convert_mapping import node_type_conve
 from core.matrix_workflow.workflow_runner.variables.variable_pool import VariablePool
 from enums.operate_enums import OperateEnums
 
-
+#
 class GraphEngine:
 
     def __init__(self, graph: Graph, variable_pool: VariablePool, device_id: str):
@@ -24,24 +24,24 @@ class GraphEngine:
         #     for key, edge_list in self.graph.source_node_edge_mapping.items()
         # }
 
-        start_node_id = self.graph.root_node_id
+        start_node_id = self.graph.root_node_id # 获取起始节点ID
         # parallel_start_node_id = None
-        next_node_id = start_node_id
-        previous_node_id = start_node_id
+        next_node_id = start_node_id # 获取起始节点ID
+        previous_node_id = start_node_id # 获取起始节点ID
 
         result_list = []
         try:
             while True:
-                current_node_id = next_node_id
+                current_node_id = next_node_id # 获取起始节点ID
 
-                current_node_config = self.graph.node_id_data_mapping.get(current_node_id)
+                current_node_config = self.graph.node_id_data_mapping.get(current_node_id) #  获取节点配置
                 if not current_node_config:
                     raise Exception(f"Run Error: node config of {current_node_id} not found!")
 
                 # 操作类型
-                operate = -1
+                operate = -1 # 操作类型
 
-                node_type = current_node_config.get("data").get('node_type')
+                node_type = current_node_config.get("data").get('node_type') # 获取节点类型
                 if node_type in node_type_convert_mapping:
                     convert_type = node_type_convert_mapping[node_type]
                     operate = node_operate_convert_mapping[node_type]
@@ -87,6 +87,8 @@ class GraphEngine:
                     if current_node_run_result.outputs is not None and current_node_run_result.status:
                         for key, value in current_node_run_result.outputs.items():
                             self.variable_pool.add(("run_outputs", current_node_id, key), value)
+
+
                 result_list.append(current_node_run_result)
 
                 if current_node_type == NodeType.END:

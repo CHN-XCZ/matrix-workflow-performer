@@ -2,6 +2,8 @@ import requests
 import uiautomator2 as u2
 from loguru import logger
 def open_xhs_link(url, device):
+    logger.info(f"{url}")
+    return
     content_id = get_content_id(url)
     d = u2.connect(device)
     d.app_start("com.xingin.xhs")

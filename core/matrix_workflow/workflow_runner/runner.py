@@ -19,28 +19,28 @@ class MatrixWorkflowRunner:
         self.graph_config = graph_config
 
     def run(self):
-        graph = Graph.init(self.graph_config)
-        variablePool = VariablePool()
-        future_list = []
-        adb_path = get_adb_path()
-        devices = get_connected_devices(adb_path)
-        if not devices:
+        graph = Graph.init(self.graph_config) # 初始化图
+        variablePool = VariablePool() # 初始化变量池
+        future_list = [] # 线程池
+        adb_path = get_adb_path() # 获取adb路径
+        devices = get_connected_devices(adb_path) # 获取已连接的设备列表
+        if not devices: # 如果未找到已连接的设备，则抛出异常
             raise Exception("No connected devices found.")
 
             # with executor as e:
-        for device_id in devices:
-            if device_id not in self.graph_config["devices_list"]:
+        for device_id in devices: # 遍历设备列表
+            if device_id not in self.graph_config["devices_list"]: # 如果设备未在配置文件中，则跳过
                 continue
-            graphEngine = GraphEngine(graph, variablePool, device_id)
-            future_list.append(executor.submit(graphEngine.run_graph))
+            graphEngine = GraphEngine(graph, variablePool, device_id) # 初始化设备引擎
+            future_list.append(executor.submit(graphEngine.run_graph)) # 提交任务到线程池
             # self.result_mapping = graphEngine.result_mapping
-        wait(future_list, return_when=ALL_COMPLETED)
+        wait(future_list, return_when=ALL_COMPLETED) # 等待所有任务完成
 
         # 所有任务完成后输出结果
-        flow_run_results = {}
-        for future in future_list:
-            flow_run_result = DeviceRunResult(status=True, nodes_result=[], error=None)
-            device_id, result = future.result()
+        flow_run_results = {} #  结果映射
+        for future in future_list: # 遍历任务列表
+            flow_run_result = DeviceRunResult(status=True, nodes_result=[], error=None) # 初始化设备运行结果
+            device_id, result = future.result() # 获取任务结果
             for e in result:
                 if not e.status:
                     flow_run_result.status = False
