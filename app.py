@@ -18,8 +18,9 @@ scheduler = None
 
 task_queue = queue.Queue()
 
-heartbeat_request_url = "http://192.168.5.198:8000/api/matrix/task/retrieve-task"
-report_request_url = "http://192.168.5.198:8000/api/matrix/task/results"
+# TODO: MOVE API URL INTO DOT ENV FILE
+heartbeat_request_url = "http://121.43.149.18:8000/api/matrix/task/retrieve-task"
+report_request_url = "http://121.43.149.18:8000/api/matrix/task/results"
 
 
 def init_scheduled_job():

@@ -1,10 +1,15 @@
 from typing import Mapping, Union, Any
 from collections import defaultdict
 from collections.abc import Sequence
+import re
+import json
 
+from loguru import logger
 from pydantic import BaseModel,Field
 
 VariableValue = Union[str, int, float, dict, list]
+
+VARIABLE_PATTERN = re.compile(r"\{\{#([a-zA-Z0-9_]{1,50}(?:\.[a-zA-Z_][a-zA-Z0-9_]{0,29}){1,10})#\}\}")
 
 class VariablePool(BaseModel):
     variable_dict: dict[str, dict[int, Any]] = Field(
@@ -54,3 +59,20 @@ class VariablePool(BaseModel):
             return
         hash_key = hash(tuple[selector[1:]])
         self.variable_dict[selector[0]].pop(hash_key, None)
+
+    def convert_template_text(self, template: str, /):
+        parts = VARIABLE_PATTERN.split(template)
+        segments = []
+        for part in filter(lambda x: x, parts):
+            # if "." in part and (variable := self.get(["run_outputs",*part.split(".")])):
+            #     segments.append(variable)
+            if "." in part and (variable := self.get(["run_outputs",*part.split(".")])):
+
+                if isinstance(variable, (str, int, float)):
+                    segments.append(variable)
+
+                else:
+                    segments.append(json.dumps(variable))
+            else:
+                segments.append(part)
+        return "".join([str(segment) for segment in segments])

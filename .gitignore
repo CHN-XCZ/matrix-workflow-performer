@@ -1,4 +1,6 @@
 __pycache__/
 .ropeproject/
 .python-version
-workflow.log
+/logs/
+.venv
+pyrightconfig.json

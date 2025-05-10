@@ -6,5 +6,5 @@ load_dotenv()
 def load_config():
     if not os.getenv("Authorization_KEY"):
         raise ValueError("Authorization_KEY is not set in .env file")
-def get_config(key:str) -> str:
+def get_config(key:str):
     return os.getenv(key)
