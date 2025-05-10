@@ -575,3 +575,6 @@
 2025-04-07 21:35:36.482 | INFO     | plat.tiktok.command:operate_tiktok_link:30 - Performing Comment...can
 2025-04-07 21:35:36.489 | INFO     | __main__:run_task:76 - run task, report request success
 2025-04-07 21:35:36.489 | INFO     | __main__:run_task:77 - run task, result_Mapping: {'QKYPIZA6R8IJ7TLV': <core.matrix_workflow.nodes.node_run_result.DeviceRunResult object at 0x10efd87f0>}
+2025-05-10 15:00:59.609 | INFO     | __main__:<module>:102 - 程序初始化 ...
+2025-05-10 15:00:59.618 | INFO     | __main__:init_scheduled_job:31 - 定时任务执行
+2025-05-10 15:00:59.624 | INFO     | __main__:<module>:108 - 初始化结束 ...
