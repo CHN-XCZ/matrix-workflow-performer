@@ -26,8 +26,7 @@ class BaseNode:
     def run(self) -> NodeRunResult | None:
         try:
             node_run_result = NodeRunResult(self.node_data["id"], self.node_data["node_type"],
-                                            self.node_data["node_title"], False, None, None, None)
-
+            self.node_data["node_title"], False, None, None, None)
             self.result = node_run_result
             node_type = self.node_data["node_type"]
             if self.node_data["node_type"] in node_type_convert_mapping.keys():

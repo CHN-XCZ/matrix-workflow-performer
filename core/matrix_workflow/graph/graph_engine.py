@@ -79,6 +79,8 @@ class GraphEngine:
                     if current_node_run_result.outputs is not None and current_node_run_result.status:
                         for key, value in current_node_run_result.outputs.items():
                             self.variable_pool.add(("run_outputs", current_node_id, key), value)
+
+
                 result_list.append(current_node_run_result)
 
                 if current_node_type == NodeType.END:

@@ -19,7 +19,7 @@ class XhsNode(BaseNode):
             task_json = self.init_task_json() # 初始化任务参数
             if not task_json:
                 raise Exception("[XhsNode] run failed: Task json not found!")
-            if self.operate == OperateEnums.COLLECT.value: # 采集
+            if self.operate == OperateEnums.COLLECT.value or self.operate == OperateEnums.SEARCH.value: # 采集
                 result = start_script_by_type(self.device_id, self.operate, task_json, soft_type=4)
                 if len(result) > 0:
                     collect_result = {}
@@ -62,6 +62,9 @@ class XhsNode(BaseNode):
                 elif self.operate == OperateEnums.FOLLOW.value:
                     task_json['user_id'] = self.variable_pool.get(("run_outputs", node_data["user_id"][0],node_data["user_id"][1]))
                     self.result.inputs[node_data["user_id"][1]]= task_json['user_id']
+                elif self.operate == OperateEnums.SEARCH.value:
+                    task_json['search_text'] = self.variable_pool.get(("run_outputs", node_data["search_keyword"][0],node_data["search_keyword"][1]))
+                    self.result.inputs[node_data["search_keyword"][1]]= task_json['search_text']
                 elif self.operate == OperateEnums.COLLECT.value:
                     task_json["collect"] = "collect"
                 else:

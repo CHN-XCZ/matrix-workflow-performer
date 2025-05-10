@@ -10,6 +10,7 @@ from loguru import logger
 
 from core.matrix_workflow.workflow_runner.runner import MatrixWorkflowRunner, post_task
 from plat.device.adb_device import get_connected_devices, get_adb_path
+from plat.task_runner import start_script_by_type
 from utils.system_config import load_config, get_config
 
 task_executor = ThreadPoolExecutor(max_workers=10)  # 任务线程池
@@ -103,8 +104,9 @@ if __name__ == '__main__':
     load_config() # 加载配置
     init_scheduled_job() # 初始化定时任务
     init_task_runner() # 初始化任务执行器
-
+    # start_script_by_type('9XFYJZPNONQ495KF', 6, {'search_text':'蔡山镇'}, soft_type=4)
     # post_task()
+    # logger.info(f"{variablePool['gather_result']}")
     logger.info('初始化结束 ...')
     # use_reloader=False 禁用自动重载，防止定时器触发两次
     app.run(host='0.0.0.0', port=9090, debug=True, use_reloader=False)

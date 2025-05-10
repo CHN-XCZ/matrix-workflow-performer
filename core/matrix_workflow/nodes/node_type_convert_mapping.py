@@ -20,7 +20,7 @@ node_operate_convert_mapping:dict[str, int] = {
     "rednote_like":2,
     "rednote_follow":3,
     "rednote_gather":4,
-    "rednote_search":5,
+    "rednote_search":6,
 
     "tiktok_post":0,
     "tiktok_comment":1,
