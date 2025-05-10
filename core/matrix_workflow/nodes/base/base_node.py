@@ -10,14 +10,15 @@ from core.matrix_workflow.workflow_runner.variables.variable_pool import Variabl
 class BaseNode:
     _node_type: NodeType
 
-    def __init__(self, variable_pool: VariablePool, previous_node_id: str, node_data: Mapping[str, Any], device_id: str,
-                 operate: int):
+    def __init__(self, *, variable_pool: VariablePool, previous_node_id: str, node_data: Mapping[str, Any], device_id: str,
+                 operate: int, node_id: str):
         self.variable_pool = variable_pool
         self.previous_node_id = previous_node_id
         self.node_data = node_data
         self.device_id = device_id
         self.operate = operate
         self.result = None
+        self.node_id = node_id
 
     @abstractmethod
     def _run(self) -> NodeRunResult:

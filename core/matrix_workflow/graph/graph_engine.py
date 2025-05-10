@@ -58,7 +58,7 @@ class GraphEngine:
 
                 current_node_instance = current_node_cls(variable_pool=self.variable_pool,
                                                          previous_node_id=previous_node_id, node_data=current_node_data,
-                                                         device_id=self.device_id, operate=operate)
+                                                         device_id=self.device_id, operate=operate, node_id=current_node_id)
 
                 current_node_run_result = current_node_instance.run()
 
@@ -70,6 +70,14 @@ class GraphEngine:
                     for key, value in self.graph.input_variables.items():
                         self.variable_pool.add(("run_outputs", current_node_id, key), value)
                     self.variable_pool.add(("run_outputs",current_node_id, "device_serial"), current_node_instance.device_id)
+                    self.variable_pool.add(("run_outputs",current_node_id, "mamba_out"), ["man!"])
+                    self.variable_pool.add(("run_outputs",current_node_id, "what_can_i_say"), {
+                        "what": {
+                            "can": {
+                                "i": "say"
+                            }
+                        }
+                    })
 
                                            # 将节点运行结果添加到变量池中
                 self.variable_pool.add(("node_result", current_node_id), current_node_run_result)
