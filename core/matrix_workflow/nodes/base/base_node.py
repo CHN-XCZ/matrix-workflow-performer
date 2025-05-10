@@ -16,7 +16,7 @@ class BaseNode:
         self.previous_node_id = previous_node_id
         self.node_data = node_data
         self.device_id = device_id
-        self.operate = operate
+        self.operate = operate # 操作类型
         self.result = None
         self.node_id = node_id
 
@@ -27,8 +27,7 @@ class BaseNode:
     def run(self) -> NodeRunResult | None:
         try:
             node_run_result = NodeRunResult(self.node_data["id"], self.node_data["node_type"],
-                                            self.node_data["node_title"], False, None, None, None)
-
+            self.node_data["node_title"], False, None, None, None)
             self.result = node_run_result
             node_type = self.node_data["node_type"]
             if self.node_data["node_type"] in node_type_convert_mapping.keys():

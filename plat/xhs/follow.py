@@ -8,6 +8,7 @@ from loguru import logger
 from enums.operate_enums import OperateEnums
 from utils.click import click_resource_timeout_button
 from utils.clipboard import get_clipboard_text
+from utils.common import go_home, go_back
 from utils.image import os_push_image, select_image_in_gallery, export_gallery_to_computer
 from utils.str import extract_filename_from_url
 from plat.xhs.common import restart_xhs, is_element_within_bounds, get_element_bounds
@@ -23,7 +24,7 @@ def collect_articles(d):
             for article_element in articles_button:
                 video_button = article_element.sibling(resourceId='com.xingin.xhs:id/e94')
                 if video_button.exists and is_element_within_bounds(video_button,
-                                                                    get_element_bounds(article_element)):
+                            get_element_bounds(article_element)):
                     return articles
                 if article_element.exists:
                     article_element.click()
@@ -48,6 +49,55 @@ def collect_articles(d):
         if len(articles) == 0:
             raise Exception("没有找到文章")
         return articles
+    except Exception as e:
+        logger.error(f'设备号{d.serial}: 采集小红书文章时发生错误{e}')
+        logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
+        raise e
+
+
+# 搜索采集
+def s_collect_articles(d):
+    articles = []
+    logger.info(f"设备：{d.serial}: 开始采集文章")
+    try:
+        # 最长等待 10 秒查找目标控件
+        if d(resourceId='com.xingin.xhs:id/g7j').wait(timeout=10):
+            logger.info("找到 articles_button，准备点击")
+            # print("当前Activity：", d.app_current())
+            articles_button = d(resourceId='com.xingin.xhs:id/g7j')
+            logger.info(f"articles_button数量:{len(articles_button)}")
+        else:
+            return logger.error("未找到 articles_button，超过 10 秒")
+        if len(articles_button) > 0:
+            for article_element in articles_button:
+                video_button = article_element.sibling(resourceId='com.xingin.xhs:id/g7k')
+                if video_button.exists and is_element_within_bounds(video_button,
+                            get_element_bounds(article_element)):
+                    # 如果为视频,则返回
+                    return articles
+                if article_element.exists:
+                    article_element.click()
+                    time.sleep(2) # 等待 2 秒
+                    article = get_article_noimg(d)
+                    if article is not None:
+                        skip = False
+                        if article["title"] == "" and article["content"] == "" and article["username"] == "":
+                            skip = True
+                        for art in articles:
+                            if article["title"] == art["title"] and article["content"] == art["content"]:
+                                skip = True
+                                break
+                        if skip:
+                            d.press('back')
+                            return articles
+                        logger.info(f"设备：{d.serial},采集：{article}")
+                        articles.append(article)
+                    d.press('back')
+        logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
+        if len(articles) == 0:
+            raise Exception("没有找到文章")
+        return articles
+        # return True
     except Exception as e:
         logger.error(f'设备号{d.serial}: 采集小红书文章时发生错误{e}')
         logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
@@ -103,6 +153,53 @@ def get_article(device, count):
     export_gallery_to_computer(image_path, device.serial)
     return article
 
+def get_article_noimg(device):
+    article = {}
+    title_button = device(resourceId='com.xingin.xhs:id/g8t')
+    if title_button.wait(timeout=10):
+        title = title_button.get_text()
+        article['title'] = title
+    else:
+        article['title'] = ""
+        logger.error(f'设备：{device.serial}:没有找到文章标题')
+    articles_area = device(resourceId='com.xingin.xhs:id/dqd')
+    if articles_area.wait(timeout=10):
+        article_text = articles_area.get_text()
+        article['content'] = article_text
+    else:
+        article['content'] = ""
+        logger.error(f'设备：{device.serial}:没有找到文章内容')
+    user_button = device(resourceId='com.xingin.xhs:id/nickNameTV')
+    if user_button.wait(timeout=10):
+        user = user_button.get_text()
+        article['username'] = user
+    else:
+        article['username'] = ""
+        logger.error(f'设备：{device.serial}:没有找到用户名称')
+    share_button = device(resourceId='com.xingin.xhs:id/moreOperateIV')
+    if share_button.wait(timeout=10):
+        share_button.click()
+        time.sleep(1)
+        copy_button = device(resourceId='com.xingin.xhs:id/j_8', text='复制链接')
+        if copy_button.wait(timeout= 10) and copy_button.exists:
+            copy_button.click()
+            time.sleep(1)
+            xhs_link = get_clipboard_text(device)
+            if xhs_link:
+                # 正则表达式提取链接
+                link_pattern = r"http[s]?://[^\s，]+"
+                links = re.findall(link_pattern, xhs_link)
+                if len(links) > 0:
+                    article['link'] = links[0]
+                else:
+                    article['link'] = ""
+        else:
+            logger.error(f'设备：{device.serial}:没有找到复制按钮')
+    # image_path = device.serial + "\\" + article["title"] + article["username"]
+    # image_path = os.path.join(device.serial, article["title"] + article["username"])
+    # export_gallery_to_computer(image_path, device.serial)
+    return article
+
 
 # '65 Amber Lee发布了一篇小红书笔记，快来看吧！ 😆 Dirvawmprxtvxhh 😆 Http://Xhslink.Com/A/Uycel4Cdziv3，复制本条信息，打开【小红书】App查看精彩内容！'
 # def swipe_up(d):
@@ -121,10 +218,10 @@ def get_article(device, count):
 
 def click_search(device):
     search = device(resourceId='com.xingin.xhs:id/hmg', index=2)
-    if search.exists:
+    if search.wait(timeout=5):
         search.click()
     else:
-        logger.warning("没有找到Search元素")
+        logger.warning("未找到搜索按钮")
 
 
 def search_keyword(device, search_text):
@@ -135,22 +232,37 @@ def search_keyword(device, search_text):
     :param search_text: 要输入的搜索内容
     """
     try:
+        logger.info("当前Activity：", device.app_current())
+        go_home(device)
         click_search(device)
-        time.sleep(1)
-        # 查找输入框
-        search_box = device(resourceId="com.xingin.xhs:id/fam")
+        time.sleep(1) # 等待1秒
+        # print("当前Activity：", device.app_current())
+        search_box_f = device(resourceId="com.xingin.xhs:id/fam")
+        search_box_l = device(resourceId="com.xingin.xhs:id/fah")
 
-        if search_box.exists:
-            # 查找虚拟键盘
-            search_input = device(resourceId='com.google.android.inputmethod.latin:id/0_resource_name_obfuscated',
-                                  className="android.widget.FrameLayout")
-            if search_input.exists:
-                search_box.set_text(search_text)
-                # 点击键盘的搜索按钮
-                device(resourceId='com.xingin.xhs:id/luz', text='搜索').click()
-                # d.press("enter")
-        else:
+        if search_box_f.exists:
+            search_box_f.set_text(search_text)
+            device(resourceId='com.xingin.xhs:id/luz', text='搜索').click()
+        elif search_box_l.exists:
+            search_box_l.click()
+            search_box_f.set_text(search_text)
+            device(resourceId='com.xingin.xhs:id/luz', text='搜索').click()
+        else :
+            click_search(device)
+            time.sleep(1)
             logger.warning("没有找到搜索框")
+
+        # if search_box.exists:
+        #     # 查找虚拟键盘
+        #     search_input = device(resourceId='com.google.android.inputmethod.latin:id/0_resource_name_obfuscated',
+        #                           className="android.widget.FrameLayout")
+        #     if search_input.exists:
+        #         search_box.set_text(search_text)
+        #         # 点击键盘的搜索按钮
+        #         device(resourceId='com.xingin.xhs:id/luz', text='搜索').click()
+        #         # d.press("enter")
+        # else:
+        #     logger.warning("没有找到搜索框")
 
     except Exception as e:
         logger.exception(f"异常: {e}")
@@ -233,25 +345,29 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
     """
     # time.sleep(3)
     # 根据操作类型执行不同的动作
-    if action_type == OperateEnums.POST:
+    if action_type == OperateEnums.POST: # 发布文章
         logger.info(f"Performing Concern...")
         return open_new_post(device, img_url, title, content)
-    elif action_type == OperateEnums.REPLY:
+    elif action_type == OperateEnums.REPLY: # 评论
         logger.info(f"Performing Comment...{content}")
         open_xhs_link(tweet_url, device.serial)
         return reply_post(device, content)
-    elif action_type == OperateEnums.LIKE:
+    elif action_type == OperateEnums.LIKE: # 点赞
         logger.info("Performing Like...")
         open_xhs_link(tweet_url, device.serial)
         return like_post(device)
-    elif action_type == OperateEnums.FOLLOW:
+    elif action_type == OperateEnums.FOLLOW: #  关注
         logger.info("Performing Follow...")
-        open_xhs_user_home(device.serial, tweet_url)
-        return concern_post(device)
-    elif action_type == OperateEnums.COLLECT:
+        open_xhs_user_home(device.serial, tweet_url) # 打开用户主页
+        return concern_post(device) # 关注
+    elif action_type == OperateEnums.COLLECT: # 收藏
         logger.info("Performing COLLECT...")
-        restart_xhs(device)
-        return collect_articles(device)
+        restart_xhs(device) # 重启xhs
+        return collect_articles(device) # 收藏
+    elif action_type == OperateEnums.SEARCH:
+        search_keyword(device, tweet_url) # 搜索
+        logger.info("搜索操作完成完成")
+        return s_collect_articles(device) # 采集
     else:
         logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
         raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
