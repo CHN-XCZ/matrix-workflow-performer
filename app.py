@@ -11,7 +11,7 @@ from loguru import logger
 from core.matrix_workflow.workflow_runner.runner import MatrixWorkflowRunner, post_task
 from plat.device.adb_device import get_connected_devices, get_adb_path
 from plat.task_runner import start_script_by_type
-from utils.system_config import load_config, get_config
+from core.config import app_settings
 
 task_executor = ThreadPoolExecutor(max_workers=10)  # 任务线程池
 
@@ -19,9 +19,9 @@ scheduler = None
 
 task_queue = queue.Queue() # 任务队列
 
-# TODO: MOVE API URL INTO DOT ENV FILE
-heartbeat_request_url = "http://121.43.149.18:8000/api/matrix/task/retrieve-task"
-report_request_url = "http://121.43.149.18:8000/api/matrix/task/results"
+heartbeat_request_url = app_settings.retrieve_task_url    # 上报当前设备列表并获取最新任务 api
+report_request_url = app_settings.report_result_url     # 上报任务执行结果 api
+controller_auth_key = app_settings.authorization_header  # 校验请求头
 
 
 def init_scheduled_job():
@@ -37,8 +37,7 @@ def scheduler_executor_heartbeat_queue():
     try:
         adb_path = get_adb_path() # adb 路径
         devices_list = get_connected_devices(adb_path) # 设备列表
-        authorization_key = get_config("Authorization_KEY") # 授权码
-        headers = {'Authorization': authorization_key} # 请求头
+        headers = {'Authorization': controller_auth_key} # 请求头
         response = requests.post(heartbeat_request_url, headers=headers, json={"devices_list": devices_list}) # 请求接口 设备列表
         if response.status_code != 200:
             # logger.error('scheduler, heartbeat request error， code != 200, response: {}'.format(response))
@@ -102,7 +101,6 @@ if __name__ == '__main__':
         enqueue=True,  # 多进程安全, 防止阻塞
     )
     logger.info('程序初始化 ...')
-    load_config() # 加载配置
     init_scheduled_job() # 初始化定时任务
     init_task_runner() # 初始化任务执行器
     # start_script_by_type('9XFYJZPNONQ495KF', 6, {'search_text':'蔡山镇'}, soft_type=4)

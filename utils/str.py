@@ -2,8 +2,6 @@ import os
 import re
 from urllib.parse import urlparse
 
-from utils.system_config import get_config
-
 
 def is_prefix_matching(str1, str2, keyword="Received at"):
     # 找到 "Received at" 前面的部分
@@ -65,7 +63,3 @@ def extract_digits(phone_number):
     # 使用正则表达式提取数字
     digits_only = re.sub(r'\D', '', phone_number)
     return digits_only
-
-if __name__ == '__main__':
-    value = get_config("Authorization_KEY")
-    print(value)
