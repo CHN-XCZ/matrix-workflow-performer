@@ -75,7 +75,7 @@ def run_task():
                     key: result.to_dict()  # 对每个 DeviceRunResult 调用 to_dict()
                     for key, result in flow_run_result.items()
                 }
-                authorization_key = get_config("Authorization_KEY")
+                authorization_key = app_settings.authorization_key
                 headers = {'Authorization': authorization_key}
                 response = requests.post(report_request_url, headers=headers, json=report)
                 if response.status_code!= 201:
