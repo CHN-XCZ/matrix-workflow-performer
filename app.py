@@ -23,7 +23,6 @@ heartbeat_request_url = app_settings.retrieve_task_url    # 上报当前设备�
 report_request_url = app_settings.report_result_url     # 上报任务执行结果 api
 controller_auth_key = app_settings.authorization_header  # 校验请求头
 
-
 def init_scheduled_job():
     global scheduler # 定时任务
     if not scheduler: # 定时任务未启动
