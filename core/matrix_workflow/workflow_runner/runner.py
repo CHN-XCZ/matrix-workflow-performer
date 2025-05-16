@@ -9,8 +9,6 @@ from core.matrix_workflow.graph.graph import Graph
 from plat.device.adb_device import get_adb_path, get_connected_devices
 from loguru import logger
 
-from utils.system_config import get_config
-
 executor = ThreadPoolExecutor(max_workers=200)  # 设备线程池
 
 
