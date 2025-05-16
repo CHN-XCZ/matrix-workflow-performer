@@ -13,7 +13,7 @@ from core.helper.code_executor.python3.python_transformer import Python3Template
 
 
 class CodeLanguage(str, Enum):
-    PYTHON3 = "python"
+    PYTHON3 = "python3"
     JAVASCRIPT = "javascript"
 
 class CodeExecutionResponse(BaseModel):
@@ -79,12 +79,6 @@ class CodeExecutor:
                 )
         except Exception as e:
             raise e
-        except Exception as e:
-            raise Exception(
-                "Failed to execute code, which is likely a network issue,"
-                " please check if the sandbox service is running."
-                f" ( Error: {str(e)} )"
-            )
 
         try:
             response = response.json()

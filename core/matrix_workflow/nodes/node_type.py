@@ -5,7 +5,7 @@ class NodeType(str, Enum):
     END = 'end'
     IF_ELSE = 'if_else'
     HTTP_REQUEST = 'http_request'
+    CODE = 'code'
     XHS = 'xhs'
     FACEBOOK = 'facebook'
     TIKTOK = 'tiktok'
-    CODE = 'code'
