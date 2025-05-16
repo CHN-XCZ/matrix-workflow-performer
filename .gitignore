@@ -5,5 +5,6 @@ __pycache__/
 .venv
 pyrightconfig.json
 .idea
+.DS_Store
 
 .env
