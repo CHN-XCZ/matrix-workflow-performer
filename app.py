@@ -2,15 +2,20 @@ import json
 import os
 import queue
 from concurrent.futures import ThreadPoolExecutor
+import time
 
 import requests
+import uiautomator2
 from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
 
+from core.matrix_workflow.nodes.xhs.utils import SmoothScroller, scroll_until_element_and_scroll_distance, \
+    close_update_popup
 from core.matrix_workflow.workflow_runner.runner import MatrixWorkflowRunner, post_task
 from plat.device.adb_device import get_connected_devices, get_adb_path
 from plat.task_runner import start_script_by_type
+from plat.xhs.follow import collect_reply
 from utils.system_config import load_config, get_config
 
 task_executor = ThreadPoolExecutor(max_workers=10)  # 任务线程池
@@ -104,7 +109,15 @@ if __name__ == '__main__':
     load_config() # 加载配置
     init_scheduled_job() # 初始化定时任务
     init_task_runner() # 初始化任务执行器
-    # start_script_by_type('9XFYJZPNONQ495KF', 6, {'search_text':'蔡山镇'}, soft_type=4)
+    device_id = '9XFYJZPNONQ495KF'
+
+    # start_script_by_type(device_id, 6, {'search_text':'蔡山镇'}, soft_type=4)
+    # start_script_by_type(device_id, 7, {'link_url':'http://xhslink.com/a/9eliOXua2eBcb'}, soft_type=4)
+    # start_script_by_type(device_id, 7, {'link_url':'http://xhslink.com/a/YUehoSy8jhBcb'}, soft_type=4)
+    device = uiautomator2.connect(device_id)  # 连接设备
+    # collect_reply(device)
+
+
     # post_task()
     # logger.info(f"{variablePool['gather_result']}")
     logger.info('初始化结束 ...')

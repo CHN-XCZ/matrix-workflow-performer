@@ -65,6 +65,9 @@ class XhsNode(BaseNode):
                 elif self.operate == OperateEnums.SEARCH.value:
                     task_json['search_text'] = self.variable_pool.get(("run_outputs", node_data["search_keyword"][0],node_data["search_keyword"][1]))
                     self.result.inputs[node_data["search_keyword"][1]]= task_json['search_text']
+                elif self.operate == OperateEnums.COLLECT_REPLY.value:
+                    task_json['post_url'] = self.variable_pool.get(("run_outputs", node_data["link_url"][0],node_data["link_url"][1]))
+                    self.result.inputs[node_data["link_url"][1]]= task_json['post_url']
                 elif self.operate == OperateEnums.COLLECT.value:
                     task_json["collect"] = "collect"
                 else:
