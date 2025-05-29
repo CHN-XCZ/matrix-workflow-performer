@@ -57,6 +57,11 @@ def start_script_by_type(device_id, operate_cmd, task_json, soft_type=4):
                 logger.info(f"[主动任务] 设备ID: {device_id} 开始搜索操作")
                 search_text = task_json['search_text']
                 is_success = start_link_reply_retweet(device_id, search_text, start_type=6, soft_type=soft_type)
+            # 采集评论
+            elif operation == OperateEnums.COLLECT_REPLY:
+                logger.info(f"[ActiveTask] 设备ID: {device_id} 开始采集评论")
+                post_url = task_json['link_url']
+                is_success = start_link_reply_retweet(device_id, post_url, start_type=7, soft_type=soft_type)
             else:
                 raise Exception(f"[主动任务] 设备ID: {device_id} 不支持的操作:{operation}")
             return is_success
@@ -96,6 +101,8 @@ def start_link_reply_retweet(param_serial, param_link, title = None, img_url=Non
                 (5, 6): lambda: tiktok.operate_tiktok_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.REPOST, content=comment),
                 # 搜索
                 (6, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.SEARCH, content=comment),
+                # 采集评论
+                (7, 4): lambda: redNote.operate_xhs_link(device, param_link, img_url=img_url, title= title, action_type=OperateEnums.COLLECT_REPLY, content=comment),
             }
             return operations.get((start_type, soft_type), lambda: False)()
 

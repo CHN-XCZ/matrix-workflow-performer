@@ -5,6 +5,7 @@ import time
 
 from loguru import logger
 
+from core.matrix_workflow.nodes.xhs.utils import scroll_until_element_and_scroll_distance, close_update_popup
 from enums.operate_enums import OperateEnums
 from utils.click import click_resource_timeout_button
 from utils.clipboard import get_clipboard_text
@@ -59,6 +60,7 @@ def collect_articles(d):
 def s_collect_articles(d):
     articles = []
     logger.info(f"设备：{d.serial}: 开始采集文章")
+    #
     try:
         # 最长等待 10 秒查找目标控件
         if d(resourceId='com.xingin.xhs:id/g7j').wait(timeout=10):
@@ -78,6 +80,7 @@ def s_collect_articles(d):
                 if article_element.exists:
                     article_element.click()
                     time.sleep(2) # 等待 2 秒
+                    close_update_popup(d)
                     article = get_article_noimg(d)
                     if article is not None:
                         skip = False
@@ -103,6 +106,192 @@ def s_collect_articles(d):
         logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
         raise e
 
+# 搜索采集
+def collect_reply(d,tweet_url):
+    close_update_popup(d)
+    replies = []
+    # replies = [{'user_name': '当时明月', 'content': '发现了宝藏 6天前  江苏 回复'}]
+    width, height = d.window_size()
+    start_x = width // 2
+    swipe__y = int(height * 0.5)
+    logger.info(f"设备：{d.serial}: 开始采集评论操作")
+    try:
+        reply_action(d) # 点击评论按钮
+        main_reply = get_main_reply(d)
+        replies = [*main_reply]
+        for item in replies:
+            print(item)
+            # d.shell(f"input swipe {start_x} {swipe__y - 200} {start_x} {swipe__y + 200} 100")
+            open_xhs_link(tweet_url, d.serial)
+            close_update_popup(d)
+            # time.sleep(1)
+            reply_action(d)
+            # time.sleep(1)
+            scroll_until_element_and_scroll_distance(d, text=item['content'])
+            # time.sleep(1)
+            child_reply = get_child_reply(d,  item['content'])
+            print(child_reply)
+            item['sub_comments'] = child_reply
+        print(replies)
+        # logger.info(f"设备: {d.serial}: 完成采集评论，共计{len(replies)}条")
+        if len(replies) == 0:
+            raise Exception("没有找到评论")
+        return replies
+    except Exception as e:
+        logger.error(f'设备号{d.serial}: 采集小红书文章时发生错误{e}')
+        logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(replies)}篇")
+        raise e
+
+# 点击评论按钮
+def reply_action(d):
+        # 1.首次进入作品页面, 点击 一次 评论按钮
+        click_repl = d(resourceId='com.xingin.xhs:id/g6e')
+        if click_repl.wait(timeout=5):
+            click_repl.click()
+        else:
+            logger.warning("未找到评论按钮")
+            return False
+        # 2.判断是否正确跳转
+        enterkey = d(resourceId='com.google.android.inputmethod.latin:id/key_pos_ime_action')
+        if enterkey.wait(timeout=5):
+            logger.warning("暂无评论!")
+            return False
+        else:
+            return True
+
+# 获取<=5个主评论
+def get_main_reply(d):
+    main_reply = []
+    #首先获取第一个
+    etthree = d(resourceId='com.xingin.xhs:id/et3', index=1)  # 获取第一个评论的评论框
+    if etthree.wait(timeout=5):
+        print(etthree.child(resourceId='com.xingin.xhs:id/jjp').info['text'])
+        main_reply.append({"user_name": etthree.child(resourceId='com.xingin.xhs:id/jjp').info['text'],"content":etthree.child(resourceId='com.xingin.xhs:id/jci').info['text']})
+    else:
+        logger.warning("未找到评论按钮")
+        return False
+
+    for i in range(0,4):
+        etthreefor = d(text=main_reply[i]['content']).down(resourceId='com.xingin.xhs:id/et3')
+        if etthreefor.wait(timeout=5):
+            print(etthreefor.child(resourceId='com.xingin.xhs:id/jjp').info['text'])
+            main_reply.append({"user_name": etthreefor.child(resourceId='com.xingin.xhs:id/jjp').info['text'],
+                               "content": etthreefor.child(resourceId='com.xingin.xhs:id/jci').info['text']})
+            width, height = d.window_size()
+            start_x = width // 2
+            swipe__y = int(height * 0.5)
+            d.shell(f"input swipe {start_x} {swipe__y + 75} {start_x} {swipe__y - 75} 150")
+
+    return  main_reply
+
+# 获取<=3个子评论
+def get_child_reply(d, text=''):
+    def extract_reply_info(element):
+        try:
+            user_name = element.child(resourceId='com.xingin.xhs:id/jjp').info['text']
+            content = element.child(resourceId='com.xingin.xhs:id/jci').info['text']
+            return {"user_name": user_name, "content": content}
+        except Exception as e:
+            print(f"解析评论失败: {e}")
+            return None
+
+    chil_reply = []
+    expand_num = 0
+
+    # 判断是否存在2条以上子评论
+    if no_only_one(d, text):
+        # 尝试点击“查看更多”
+        expand = d(resourceId="com.xingin.xhs:id/jci", text=text).down(resourceId="com.xingin.xhs:id/euc")
+        if expand.wait(timeout=5):
+            try:
+                expand_num = int(expand.info['text'].split(' ')[1])
+            except:
+                expand_num = 0
+
+            expand.click()
+
+            # 获取第一条子评论
+            first_child = d(resourceId="com.xingin.xhs:id/jci", text=text).down(resourceId="com.xingin.xhs:id/bgr")
+            if first_child.wait(timeout=5):
+                reply = extract_reply_info(first_child)
+                if reply:
+                    chil_reply.append(reply)
+
+            # 获取更多子评论
+            for i in range(min(expand_num,2)):  # 减去第一条已处理
+                if i >= len(chil_reply):
+                    break  # 避免 index 越界
+                prev_reply = chil_reply[i]
+                next_element = d(text=prev_reply['content']).down(resourceId='com.xingin.xhs:id/bgr')
+                if next_element.wait(timeout=5):
+                    reply = extract_reply_info(next_element)
+                    if reply:
+                        chil_reply.append(reply)
+
+                    # 模拟滑动加载
+                    width, height = d.window_size()
+                    x = width // 2
+                    y = int(height * 0.5)
+                    d.shell(f"input swipe {x} {y + 75} {x} {y - 75} 150")
+        return chil_reply
+
+    # 如果只有一条子评论
+    elif no_only_one(d, text,1):
+        first_child = d(resourceId="com.xingin.xhs:id/jci", text=text).down(resourceId="com.xingin.xhs:id/bgr")
+        if first_child.wait(timeout=5):
+            reply = extract_reply_info(first_child)
+            if reply:
+                chil_reply.append(reply)
+        return chil_reply
+
+    # 无子评论
+    logger.info("该主评论没有子评论")
+    return chil_reply
+
+# 判断当前页面是否有子评论,如果有,子评论是否属于需要查找的主评论
+def no_only_one(d,text,status=0):
+    global middle_zk, middle_fmp, middle_lmp, middle_fmpzp
+    fmp = d(resourceId="com.xingin.xhs:id/jci", text=text)
+    zk = d(resourceId="com.xingin.xhs:id/jci", text=text).down(resourceId="com.xingin.xhs:id/euc")
+    fmpzp = d(resourceId="com.xingin.xhs:id/jci", text=text).down(resourceId="com.xingin.xhs:id/bgr")
+    lmp = d(resourceId="com.xingin.xhs:id/jci", text=text).down(resourceId="com.xingin.xhs:id/et3")
+    if fmp is None or  zk is  None or  fmpzp is  None or lmp is  None:
+        print("目标元素不存在")
+        if status == 0:
+            if zk is None:
+                print("✅有0或1条")
+                return False
+        elif status == 1:
+            if fmpzp is None:
+                print("❌没有子评论")
+                return False
+        # exit() # 退出程序
+
+
+    # 中间区域的垂直范围
+    if not fmp is None:
+        middle_fmp = fmp.center()[1]
+    if not zk is None:
+        middle_zk = zk.center()[1]
+    if not fmpzp is None:
+        middle_fmpzp = fmpzp.center()[1]
+    if not lmp is None:
+        middle_lmp = lmp.center()[1]
+
+
+    if status == 0:
+        if middle_fmp < middle_lmp < middle_zk:
+            print("✅有0或1条")
+            return False
+        else:
+            print("✅有1条以上")
+            return True
+    elif  status == 1:
+        if middle_fmp < middle_fmpzp < middle_lmp:
+           return True
+        else:
+            print("❌没有子评论")
+            return False
 
 def get_article(device, count):
     clear_gallery(device.serial)
@@ -234,6 +423,7 @@ def search_keyword(device, search_text):
     try:
         logger.info("当前Activity：", device.app_current())
         go_home(device)
+        close_update_popup(device)
         click_search(device)
         time.sleep(1) # 等待1秒
         # print("当前Activity：", device.app_current())
@@ -342,6 +532,8 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
         2 - 关注
         3 - 评论
         4 - 点赞
+        6 - 搜索
+        7 - 采集评论
     """
     # time.sleep(3)
     # 根据操作类型执行不同的动作
@@ -368,6 +560,10 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
         search_keyword(device, tweet_url) # 搜索
         logger.info("搜索操作完成完成")
         return s_collect_articles(device) # 采集
+    elif action_type == OperateEnums.COLLECT_REPLY:
+        open_xhs_link(tweet_url, device.serial)
+        logger.info("打开作品页")
+        return collect_reply(device,tweet_url) # 采集评论
     else:
         logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
         raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
