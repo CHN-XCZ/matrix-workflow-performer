@@ -1,6 +1,9 @@
 import threading
 import time
 
+from uiautomator2 import connect_usb
+
+
 class SmoothScroller:
     def __init__(self, device, interval_ms=2000, step_px=0):
         self.device = device
@@ -68,6 +71,9 @@ def scroll_until_element_and_scroll_distance(d,text=''):
     """
     滑动直到找到目标元素，并向上滑动它与另一个元素之间的垂直距离
     """
+    # ddd = connect_usb()
+    # ddd.scroll_to(text)
+
     width, height = d.window_size()
     start_x = width // 2
     swipe_y = int(height * 0.5)
@@ -95,9 +101,9 @@ def scroll_until_element_and_scroll_distance(d,text=''):
         return
 
     swipe_start_y = dk_center_y
-    swipe_end_y = it8_center_y + 10
+    swipe_end_y = it8_center_y + 100
 
-    print(f"滑动: {swipe_start_y} -> {swipe_end_y}")
+    # print(f"滑动: {swipe_start_y} -> {swipe_end_y}")
     # d.swipe(start_x, swipe_start_y, start_x, swipe_end_y, duration=0.8)
     timeee = abs(swipe_start_y - swipe_end_y)
     d.shell(f"input swipe {start_x} {swipe_start_y} {start_x} {swipe_end_y} {int(timeee)+500}")
