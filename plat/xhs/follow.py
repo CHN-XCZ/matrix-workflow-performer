@@ -106,7 +106,7 @@ def s_collect_articles(d):
         logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(articles)}篇")
         raise e
 
-# 搜索采集
+# 采集评论
 def collect_reply(d,tweet_url):
     close_update_popup(d)
     replies = []
@@ -119,28 +119,124 @@ def collect_reply(d,tweet_url):
         reply_action(d) # 点击评论按钮
         main_reply = get_main_reply(d)
         replies = [*main_reply]
-        for item in replies:
-            print(item)
-            # d.shell(f"input swipe {start_x} {swipe__y - 200} {start_x} {swipe__y + 200} 100")
-            open_xhs_link(tweet_url, d.serial)
-            close_update_popup(d)
-            # time.sleep(1)
-            reply_action(d)
-            # time.sleep(1)
-            scroll_until_element_and_scroll_distance(d, text=item['content'])
-            # time.sleep(1)
-            child_reply = get_child_reply(d,  item['content'])
-            print(child_reply)
-            item['sub_comments'] = child_reply
         print(replies)
-        # logger.info(f"设备: {d.serial}: 完成采集评论，共计{len(replies)}条")
-        if len(replies) == 0:
-            raise Exception("没有找到评论")
         return replies
     except Exception as e:
-        logger.error(f'设备号{d.serial}: 采集小红书文章时发生错误{e}')
-        logger.info(f"设备: {d.serial}: 完成采集文章，共计{len(replies)}篇")
+        logger.error(f'设备号{d.serial}: 采集小红书评论时发生错误{e}')
+        logger.info(f"设备: {d.serial}: 完成采集评论，共计{len(replies)}篇")
         raise e
+
+# 回复评论
+def reply_comment(d, reply_list):
+    logger.info(f"设备：{d.serial}: 开始回复评论操作")
+    close_update_popup(d)
+    reply_action(d)  # 打开评论区域
+
+    replied_set = set()  # 记录已回复的 (user_name, comment)
+
+    expand_clicked_users = set()  # 记录已经展开的用户昵称
+
+    def match_comment(user_name, comment):
+        for item in reply_list:
+            if item["user_name"] == user_name and item["comment"].strip() in comment.strip():
+                return item["reply"]
+        return None
+
+    def process_comment_blocks(d, comment_blocks, replied_set):
+        """
+        遍历评论块，点击并回复未回复过的评论。
+
+        :param d: uiautomator2 设备对象
+        :param comment_blocks: List[UiObject]，评论容器对象（如 et3/ibc）
+        :param replied_set: set，用于记录已回复 (user, content) 的组合
+        """
+        for item in comment_blocks:
+            try:
+                user_el = item.child(resourceId="com.xingin.xhs:id/jjp")
+                content_el = item.child(resourceId="com.xingin.xhs:id/jci")
+
+                if not user_el.exists or not content_el.exists:
+                    continue
+
+                user = user_el.info["text"].strip()
+                content = content_el.info["text"].strip()
+
+                # 过滤重复
+                if (user, content) in replied_set:
+                    continue
+
+                reply_text = match_comment(user, content)  # 自定义函数：根据 user+content 匹配回复
+                if reply_text:
+                    logger.info(f"准备回复【{user}】的评论：{content}")
+                    content_el.click()  # 点击评论呼出输入框
+                    time.sleep(1)
+
+                    input_box = d(resourceId="com.xingin.xhs:id/f33")
+                    if input_box.wait(timeout=3):
+                        input_box.set_text(reply_text)
+                        time.sleep(0.5)
+
+                        send_btn = d(resourceId="com.xingin.xhs:id/fb0")
+                        if send_btn.exists(timeout=2):
+                            send_btn.click()
+                            logger.info(f"已成功发送评论：{reply_text}")
+                            replied_set.add((user, content))
+                            time.sleep(2)
+                        else:
+                            logger.warning("未找到发送按钮，可能是输入失败或页面异常")
+            except Exception as e:
+                logger.warning(f"处理评论出错: {e}")
+                continue
+
+    retry_limit = 20  # 最多滑动次数
+    attempts = 0
+
+    while attempts < retry_limit and len(replied_set) < len(reply_list):
+
+        # 1. 展开所有可见的“更多回复”按钮
+        expand_buttons = d(resourceId="com.xingin.xhs:id/euc")
+        if expand_buttons.exists:
+            for btn in expand_buttons:
+                try:
+                    # 尝试找到该按钮下方最近的 et3 评论块
+                    related_comment = btn.down(resourceId="com.xingin.xhs:id/et3")
+                    user_el = related_comment.child(resourceId="com.xingin.xhs:id/jjp")
+
+                    if not user_el.exists:
+                        continue
+
+                    user_name = user_el.info["text"]
+
+                    if user_name in expand_clicked_users:
+                        continue  # 已处理，跳过
+
+                    btn.click()
+                    expand_clicked_users.add(user_name)
+                    logger.info(f"展开了【{user_name}】的更多评论")
+                    time.sleep(1)
+
+                except Exception as e:
+                    logger.warning(f"点击展开按钮失败: {e}")
+                    continue
+
+        comment_blocks = d(resourceId="com.xingin.xhs:id/et3")
+        process_comment_blocks(d, comment_blocks, replied_set)
+        comment_blocks = d(resourceId="com.xingin.xhs:id/ibc")
+        process_comment_blocks(d, comment_blocks, replied_set)
+
+        # 滑动加载更多（如果未回复完成）
+        if len(replied_set) < len(reply_list):
+            width, height = d.window_size()
+            start_x = width // 2
+            swipe_y = int(height * 0.5)
+            d.swipe(start_x, swipe_y + 300, start_x, swipe_y - 300, 0.2)
+            time.sleep(1)
+
+        attempts += 1
+
+    logger.info(f"回复完成，共回复 {len(replied_set)} 条评论")
+    return True
+
 
 # 点击评论按钮
 def reply_action(d):
@@ -162,27 +258,77 @@ def reply_action(d):
 # 获取<=5个主评论
 def get_main_reply(d):
     main_reply = []
-    #首先获取第一个
-    etthree = d(resourceId='com.xingin.xhs:id/et3', index=1)  # 获取第一个评论的评论框
-    if etthree.wait(timeout=5):
-        print(etthree.child(resourceId='com.xingin.xhs:id/jjp').info['text'])
-        main_reply.append({"user_name": etthree.child(resourceId='com.xingin.xhs:id/jjp').info['text'],"content":etthree.child(resourceId='com.xingin.xhs:id/jci').info['text']})
-    else:
-        logger.warning("未找到评论按钮")
-        return False
+    seen_comment_ids = set()  # 用于防止重复添加
+    max_comments = 5
+    retry_limit = 15  # 最大尝试次数，防止死循环
+    attempts = 0
 
-    for i in range(0,4):
-        etthreefor = d(text=main_reply[i]['content']).down(resourceId='com.xingin.xhs:id/et3')
-        if etthreefor.wait(timeout=5):
-            print(etthreefor.child(resourceId='com.xingin.xhs:id/jjp').info['text'])
-            main_reply.append({"user_name": etthreefor.child(resourceId='com.xingin.xhs:id/jjp').info['text'],
-                               "content": etthreefor.child(resourceId='com.xingin.xhs:id/jci').info['text']})
-            width, height = d.window_size()
-            start_x = width // 2
-            swipe__y = int(height * 0.5)
-            d.shell(f"input swipe {start_x} {swipe__y + 75} {start_x} {swipe__y - 75} 150")
+    while len(main_reply) < max_comments and attempts < retry_limit:
+        # 获取当前屏幕上所有主评论框
+        comment_blocks = d(resourceId='com.xingin.xhs:id/et3')
+        if not comment_blocks.exists:
+            logger.warning("未找到任何主评论框")
+            break
 
-    return  main_reply
+        for comment in comment_blocks:
+            try:
+                if len(main_reply) >= max_comments:
+                    break
+
+                content_el = comment.child(resourceId='com.xingin.xhs:id/jci')
+
+                # 1. 不存在文字控件，跳过
+                if not content_el.exists:
+                    continue
+
+                # 2. 获取文本内容
+                content = content_el.info['text'].strip()
+
+                # 3. 只包含表情标签（如 [doge]、[飞吻R] 等）
+                # 匹配内容是否全部是 [xxx] 形式，可重复
+                only_tags_or_mentions = re.fullmatch(r'((\[[^\[\]]{1,10}\])|(@\S{1,20}))[ \u200b]*',content.replace('\u200b', ''))
+                if only_tags_or_mentions:
+                    continue  # 跳过无实质内容的评论
+
+                user_el = comment.child(resourceId='com.xingin.xhs:id/jjp')
+                content_el = comment.child(resourceId='com.xingin.xhs:id/jci')
+
+                if not user_el.exists or not content_el.exists:
+                    continue
+
+                user_name = user_el.info['text']
+                content = content_el.info['text']
+
+                print(f"[主评论] 用户：{user_name} 内容：{content}")
+
+                # 构造唯一ID（可用用户+内容简单hash）
+                unique_id = f"{user_name}-{content}"
+                if unique_id in seen_comment_ids:
+                    continue
+
+
+                scroll_until_element_and_scroll_distance(d, text=content)
+                child_reply = get_child_reply(d, content)
+                print(child_reply)
+                main_reply.append({"user_name": user_name, "content": content,"sub_comments":  child_reply})
+                seen_comment_ids.add(unique_id)
+
+
+            except Exception as e:
+                logger.warning(f"解析评论块失败: {e}")
+                continue
+
+        # 滑动查找下一屏
+        width, height = d.window_size()
+        start_x = width // 2
+        swipe_y = int(height * 0.5)
+        d.swipe(start_x, swipe_y + 100, start_x, swipe_y - 100, 0.2)
+
+        attempts += 1
+        time.sleep(1)
+
+    return main_reply
+
 
 # 获取<=3个子评论
 def get_child_reply(d, text=''):
@@ -281,10 +427,10 @@ def no_only_one(d,text,status=0):
 
     if status == 0:
         if middle_fmp < middle_lmp < middle_zk:
-            print("✅有0或1条")
+            # print("✅有0或1条")
             return False
         else:
-            print("✅有1条以上")
+            # print("✅有1条以上")
             return True
     elif  status == 1:
         if middle_fmp < middle_fmpzp < middle_lmp:
@@ -564,6 +710,11 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
         open_xhs_link(tweet_url, device.serial)
         logger.info("打开作品页")
         return collect_reply(device,tweet_url) # 采集评论
+    elif action_type == OperateEnums.REPLY_COMMENT:
+
+        open_xhs_link(tweet_url["link_url"], device.serial)
+        logger.info("打开作品页")
+        return reply_comment(device,tweet_url["execute_data"]) # 采集评论
     else:
         logger.warning("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")
         raise ValueError("Invalid action type. Please use 0 for POST,1 for REPLY, 2 for LIKE, 3 for FOLLOW, or 4 for COLLECT")

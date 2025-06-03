@@ -10,6 +10,7 @@ class OperateEnums(Enum):
     # 5 转发
     # 6 搜索
     # 7 采集评论
+    # 8 采集评论
     POST = 0
     REPLY = auto()
     LIKE = auto()
@@ -18,6 +19,7 @@ class OperateEnums(Enum):
     REPOST = auto()
     SEARCH = auto()
     COLLECT_REPLY = auto()
+    REPLY_COMMENT = auto()
 
     @classmethod
     def from_str(cls, value: int):

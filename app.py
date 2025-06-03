@@ -8,6 +8,7 @@ import uiautomator2
 from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
+from uiautomator2 import Direction
 
 from core.matrix_workflow.nodes.xhs.utils import SmoothScroller, scroll_until_element_and_scroll_distance, \
     close_update_popup
@@ -16,7 +17,6 @@ from plat.device.adb_device import get_connected_devices, get_adb_path
 from plat.task_runner import start_script_by_type
 from core.config import app_settings
 from plat.xhs.follow import collect_reply
-from utils.system_config import load_config, get_config
 
 task_executor = ThreadPoolExecutor(max_workers=10)  # 任务线程池
 
@@ -109,15 +109,37 @@ if __name__ == '__main__':
     init_task_runner() # 初始化任务执行器
     device_id = '9XFYJZPNONQ495KF'
 
-    # start_script_by_type(device_id, 6, {'search_text':'蔡山镇'}, soft_type=4)
+    # start_script_by_type(device_id, 6, {'search_text':'深圳'}, soft_type=4)
     # start_script_by_type(device_id, 7, {'link_url':'http://xhslink.com/a/9eliOXua2eBcb'}, soft_type=4)
     # start_script_by_type(device_id, 7, {'link_url':'http://xhslink.com/a/YUehoSy8jhBcb'}, soft_type=4)
-    device = uiautomator2.connect(device_id)  # 连接设备
-    # collect_reply(device)
+    execute_data = {
+  "link_url": "http://xhslink.com/a/HkuGXDK0ES3db",
+  "execute_data": [
+    {
+      "user_name": "新冠后遗症患者脑雾",
+      "comment": "广东哪里 3天前  安徽 回复",
+      "reply": "我见过"
+    },
+    {
+      "user_name": "每天烦躁专家",
+      "comment": "我就说怎么有点像哪部旧动漫人物的感觉 3天前  福建 回复",
+      "reply": "我也觉得"
+    },
+    {
+      "user_name": "西瓜霜不含糖",
+      "comment": "你有这么伟大的一张脸进入中国 \n5天前  广东 回复",
+      "reply": "你是会说话的"
+    }
+  ]
+}
 
+
+    start_script_by_type(device_id, 8, {'execute_data':execute_data}, soft_type=4)
+    device = uiautomator2.connect(device_id)  # 连接设备
 
     # post_task()
     # logger.info(f"{variablePool['gather_result']}")
     logger.info('初始化结束 ...')
     # use_reloader=False 禁用自动重载，防止定时器触发两次
     app.run(host='0.0.0.0', port=9090, debug=True, use_reloader=False)
+
