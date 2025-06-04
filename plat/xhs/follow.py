@@ -370,7 +370,6 @@ def get_main_reply(d):
 
     return main_reply
 
-
 # 获取<=3个子评论
 def get_child_reply(d, text=''):
     def extract_reply_info(element):
@@ -752,7 +751,6 @@ def operate_xhs_link(device, tweet_url, img_url, title=None, action_type=None, c
         logger.info("打开作品页")
         return collect_reply(device,tweet_url) # 采集评论
     elif action_type == OperateEnums.REPLY_COMMENT:
-
         open_xhs_link(tweet_url["link_url"], device.serial)
         logger.info("打开作品页")
         return reply_comment(device,tweet_url["execute_data"]) # 采集评论

@@ -147,4 +147,3 @@ if __name__ == '__main__':
     logger.info('初始化结束 ...')
     # use_reloader=False 禁用自动重载，防止定时器触发两次
     app.run(host='0.0.0.0', port=9090, debug=True, use_reloader=False)
-
